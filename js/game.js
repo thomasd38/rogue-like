@@ -191,7 +191,7 @@ class Game {
             let distanceX = projectile.x - closestX;
             let distanceY = projectile.y - closestY;
             let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
-            
+
             if (distanceSquared < (projectile.radius * projectile.radius)) {
                 projectile.markedForDeletion = true;
                 this.player.hp -= projectile.damage;
