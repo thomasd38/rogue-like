@@ -9,13 +9,13 @@ class Player {
         this.color = '#0af'; // Cannon color
 
         // Stats
-        this.fireRate = 100; // Frames between shots (lower is faster)
+        this.fireRate = 75; // Frames between shots (lower is faster)
         this.fireTimer = 0;
         this.projectileSpeed = 10;
         this.projectileDamage = 10;
         this.projectileRadius = 5;
         this.projectileCount = 1;
-        
+
         // HP System
         this.maxHp = 3;
         this.hp = this.maxHp;

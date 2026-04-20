@@ -5,11 +5,21 @@ window.addEventListener('load', () => {
     // Create the game instance
     const game = new Game(canvas.width, canvas.height);
 
-    function animate() {
-        game.update();
-        game.draw(ctx);
-        
+    const fps = 60;
+    const interval = 1000 / fps;
+    let then = performance.now();
+
+    function animate(now) {
         requestAnimationFrame(animate);
+
+        const delta = now - then;
+
+        if (delta > interval) {
+            then = now - (delta % interval);
+            
+            game.update();
+            game.draw(ctx);
+        }
     }
 
     // Handle Upgrades
@@ -86,5 +96,5 @@ window.addEventListener('load', () => {
     });
 
     // Start loop
-    animate();
+    animate(performance.now());
 });

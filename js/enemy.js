@@ -5,7 +5,7 @@ class Enemy {
         this.y = y;
         this.width = 40;
         this.height = 40;
-        this.speed = 1 + Math.random(); // Falling speed
+        this.speed = 2 + Math.random(); // Falling speed
         this.hp = hp;
         this.maxHp = hp;
         this.color = '#f44'; // Red block
@@ -15,9 +15,9 @@ class Enemy {
     update() {
         this.y += this.speed;
 
-        // Remove if it goes off screen
+        // Wrap around if it goes off screen
         if (this.y > this.game.height) {
-            this.markedForDeletion = true;
+            this.y = -this.height;
         }
     }
 

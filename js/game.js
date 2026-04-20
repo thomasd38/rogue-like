@@ -7,13 +7,19 @@ class Game {
         this.projectiles = [];
         this.enemies = [];
         this.enemyTimer = 0;
-        this.enemyInterval = 60; // Spawn every 60 frames
-        
+        this.baseEnemyInterval = 60;
+        this.enemyInterval = this.baseEnemyInterval;
+
         // Wave state
         this.gameState = 'PLAYING'; // PLAYING, UPGRADE, GAMEOVER
         this.wave = 1;
-        this.enemiesToSpawn = 10;
-        this.enemiesSpawned = 0;
+        this.isBossWave = false;
+        this.boss = null;
+
+        // Time based wave
+        this.waveDuration = 30 * 60; // 60 seconds at 60fps
+        this.waveTimeLeft = this.waveDuration;
+        this.waveElapsedTime = 0;
     }
 
     update() {
@@ -23,30 +29,56 @@ class Game {
 
         // Update projectiles
         this.projectiles.forEach(p => p.update());
-        
-        // Spawning enemies
-        if (this.enemiesSpawned < this.enemiesToSpawn) {
+
+        if (this.isBossWave) {
+            this.boss.update();
+            this.enemies.forEach(e => e.update());
+            this.checkCollisions();
+
+            this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
+            this.enemies = this.enemies.filter(e => !e.markedForDeletion);
+
+            if (this.boss.hp <= 0) {
+                this.gameState = 'UPGRADE';
+                this.boss = null;
+                this.enemies = [];
+                window.dispatchEvent(new Event('waveCleared'));
+            }
+        } else {
+            // Update wave timers
+            this.waveTimeLeft--;
+            this.waveElapsedTime++;
+
+            // Increase difficulty every 10 seconds (600 frames)
+            if (this.waveElapsedTime % 600 === 0) {
+                if (this.enemyInterval > 10) {
+                    this.enemyInterval -= 5;
+                }
+            }
+
+            // Spawning enemies endlessly
             this.enemyTimer++;
             if (this.enemyTimer > this.enemyInterval) {
                 this.spawnEnemy();
-                this.enemiesSpawned++;
                 this.enemyTimer = 0;
             }
-        }
 
-        // Update enemies
-        this.enemies.forEach(e => e.update());
+            // Update enemies
+            this.enemies.forEach(e => e.update());
 
-        this.checkCollisions();
+            this.checkCollisions();
 
-        // Remove off-screen or dead entities
-        this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
-        this.enemies = this.enemies.filter(e => !e.markedForDeletion);
+            // Remove off-screen or dead entities
+            this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
+            this.enemies = this.enemies.filter(e => !e.markedForDeletion);
 
-        // Check for wave clear
-        if (this.enemiesSpawned >= this.enemiesToSpawn && this.enemies.length === 0) {
-            this.gameState = 'UPGRADE';
-            window.dispatchEvent(new Event('waveCleared'));
+            // Check for wave clear
+            if (this.waveTimeLeft <= 0) {
+                this.gameState = 'UPGRADE';
+                // Clear all enemies for next wave
+                this.enemies = [];
+                window.dispatchEvent(new Event('waveCleared'));
+            }
         }
     }
 
@@ -61,8 +93,16 @@ class Game {
             ctx.textAlign = 'right';
             ctx.textBaseline = 'top';
             ctx.fillText(`Wave: ${this.wave}`, this.width - 10, 10);
-            ctx.font = '14px monospace';
-            ctx.fillText(`Enemies left: ${this.enemiesToSpawn - this.enemiesSpawned + this.enemies.length}`, this.width - 10, 35);
+
+            if (this.isBossWave) {
+                ctx.fillStyle = '#f0f';
+                ctx.font = '16px monospace';
+                ctx.fillText(`BOSS WAVE`, this.width - 10, 35);
+            } else {
+                ctx.font = '14px monospace';
+                const secondsLeft = Math.ceil(this.waveTimeLeft / 60);
+                ctx.fillText(`Time Left: ${secondsLeft}s`, this.width - 10, 35);
+            }
         }
 
         if (this.gameState === 'GAMEOVER') {
@@ -79,6 +119,7 @@ class Game {
         this.player.draw(ctx);
         this.projectiles.forEach(p => p.draw(ctx));
         this.enemies.forEach(e => e.draw(ctx));
+        if (this.boss) this.boss.draw(ctx);
     }
 
     spawnEnemy() {
@@ -89,6 +130,33 @@ class Game {
     }
 
     checkCollisions() {
+        if (this.boss) {
+            // Projectiles vs Boss
+            this.projectiles.forEach(projectile => {
+                let closestX = Math.max(this.boss.x, Math.min(projectile.x, this.boss.x + this.boss.width));
+                let closestY = Math.max(this.boss.y, Math.min(projectile.y, this.boss.y + this.boss.height));
+                let distanceX = projectile.x - closestX;
+                let distanceY = projectile.y - closestY;
+                let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+                if (distanceSquared < (projectile.radius * projectile.radius)) {
+                    projectile.markedForDeletion = true;
+                    this.boss.hp -= projectile.damage;
+                }
+            });
+
+            // Player vs Boss
+            if (this.player.x < this.boss.x + this.boss.width &&
+                this.player.x + this.player.width > this.boss.x &&
+                this.player.y < this.boss.y + this.boss.height &&
+                this.player.y + this.player.height > this.boss.y) {
+
+                this.player.hp -= 3;
+                if (this.player.hp <= 0) {
+                    this.gameState = 'GAMEOVER';
+                }
+            }
+        }
+
         // Projectiles vs Enemies
         this.projectiles.forEach(projectile => {
             this.enemies.forEach(enemy => {
@@ -120,10 +188,10 @@ class Game {
                 this.player.x + this.player.width > enemy.x &&
                 this.player.y < enemy.y + enemy.height &&
                 this.player.y + this.player.height > enemy.y) {
-                
+
                 enemy.markedForDeletion = true;
                 this.player.hp--;
-                
+
                 if (this.player.hp <= 0) {
                     this.gameState = 'GAMEOVER';
                 }
@@ -133,9 +201,17 @@ class Game {
 
     startNextWave() {
         this.wave++;
-        this.enemiesToSpawn += 5; // Add 5 more enemies per wave
-        this.enemiesSpawned = 0;
-        this.enemyInterval = Math.max(20, this.enemyInterval - 5); // Spawn enemies faster
+        this.isBossWave = (this.wave % 5 === 0);
+
+        if (this.isBossWave) {
+            this.boss = new Boss(this, this.wave);
+        } else {
+            this.waveTimeLeft = this.waveDuration;
+            this.waveElapsedTime = 0;
+            this.baseEnemyInterval = Math.max(20, this.baseEnemyInterval - 5);
+            this.enemyInterval = this.baseEnemyInterval;
+        }
+
         this.gameState = 'PLAYING';
     }
 }
