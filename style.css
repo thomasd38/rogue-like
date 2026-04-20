@@ -1,0 +1,26 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #111;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+}
+
+#game-container {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    border: 2px solid #333;
+}
+
+canvas {
+    display: block;
+    background-color: #000;
+}
