@@ -15,6 +15,10 @@ class Player {
         this.projectileDamage = 10;
         this.projectileRadius = 5;
         this.projectileCount = 1;
+        
+        // HP System
+        this.maxHp = 3;
+        this.hp = this.maxHp;
     }
 
     update(input) {
@@ -45,6 +49,13 @@ class Player {
         // Small barrel to show direction
         ctx.fillStyle = '#fff';
         ctx.fillRect(this.x + this.width / 2 - 5, this.y - 10, 10, 20);
+
+        // Draw Player HP
+        ctx.fillStyle = '#0f0';
+        ctx.font = '20px monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(`HP: ${this.hp}/${this.maxHp}`, 10, 10);
     }
 
     shoot() {

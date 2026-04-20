@@ -9,10 +9,20 @@
 <body>
     <div id="game-container">
         <canvas id="gameCanvas" width="600" height="800"></canvas>
+        
+        <div id="upgrade-menu" class="hidden">
+            <h2>Room Cleared!</h2>
+            <p>Select an Upgrade</p>
+            <div id="upgrade-options">
+                <!-- Buttons will be injected here by JS -->
+            </div>
+        </div>
     </div>
     
     <script src="js/input.js"></script>
+    <script src="js/upgrades.js"></script>
     <script src="js/projectile.js"></script>
+    <script src="js/enemy.js"></script>
     <script src="js/player.js"></script>
     <script src="js/game.js"></script>
     <script src="js/main.js"></script>

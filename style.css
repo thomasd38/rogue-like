@@ -18,9 +18,77 @@ body {
 #game-container {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
     border: 2px solid #333;
+    position: relative; /* For absolute positioning of UI */
 }
 
 canvas {
     display: block;
     background-color: #000;
+}
+
+/* UI Overlay */
+.hidden {
+    display: none !important;
+}
+
+#upgrade-menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+#upgrade-menu h2 {
+    color: #0f0;
+    margin-bottom: 10px;
+    font-size: 32px;
+}
+
+#upgrade-menu p {
+    margin-bottom: 30px;
+    font-size: 18px;
+}
+
+#upgrade-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 80%;
+}
+
+.upgrade-btn {
+    background-color: #222;
+    color: #fff;
+    border: 2px solid #555;
+    border-left: 6px solid var(--rarity-color, #555);
+    padding: 15px;
+    font-family: inherit;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s, box-shadow 0.2s;
+    text-align: left;
+}
+
+.upgrade-btn:hover,
+.upgrade-btn:focus {
+    background-color: #333;
+    outline: none;
+    box-shadow: 0 0 15px var(--rarity-color, #fff);
+    border-color: var(--rarity-color, #555);
+}
+
+.upgrade-btn strong {
+    display: block;
+    color: var(--rarity-color, #0f0);
+    margin-bottom: 5px;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
