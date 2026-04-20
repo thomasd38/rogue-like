@@ -5,6 +5,7 @@ class Game {
         this.input = new InputHandler();
         this.player = new Player(this);
         this.projectiles = [];
+        this.enemyProjectiles = [];
         this.enemies = [];
         this.enemyTimer = 0;
         this.baseEnemyInterval = 60;
@@ -29,6 +30,7 @@ class Game {
 
         // Update projectiles
         this.projectiles.forEach(p => p.update());
+        this.enemyProjectiles.forEach(p => p.update());
 
         if (this.isBossWave) {
             this.boss.update();
@@ -36,12 +38,14 @@ class Game {
             this.checkCollisions();
 
             this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
+            this.enemyProjectiles = this.enemyProjectiles.filter(p => !p.markedForDeletion);
             this.enemies = this.enemies.filter(e => !e.markedForDeletion);
 
             if (this.boss.hp <= 0) {
                 this.gameState = 'UPGRADE';
                 this.boss = null;
                 this.enemies = [];
+                this.enemyProjectiles = [];
                 window.dispatchEvent(new Event('waveCleared'));
             }
         } else {
@@ -70,6 +74,7 @@ class Game {
 
             // Remove off-screen or dead entities
             this.projectiles = this.projectiles.filter(p => !p.markedForDeletion);
+            this.enemyProjectiles = this.enemyProjectiles.filter(p => !p.markedForDeletion);
             this.enemies = this.enemies.filter(e => !e.markedForDeletion);
 
             // Check for wave clear
@@ -77,6 +82,7 @@ class Game {
                 this.gameState = 'UPGRADE';
                 // Clear all enemies for next wave
                 this.enemies = [];
+                this.enemyProjectiles = [];
                 window.dispatchEvent(new Event('waveCleared'));
             }
         }
@@ -118,6 +124,7 @@ class Game {
 
         this.player.draw(ctx);
         this.projectiles.forEach(p => p.draw(ctx));
+        this.enemyProjectiles.forEach(p => p.draw(ctx));
         this.enemies.forEach(e => e.draw(ctx));
         if (this.boss) this.boss.draw(ctx);
     }
@@ -126,7 +133,8 @@ class Game {
         const x = Math.random() * (this.width - 40);
         const y = -40; // Just above screen
         const hp = 10 + Math.floor(Math.random() * 20); // random HP 10-30
-        this.enemies.push(new Enemy(this, x, y, hp));
+        const isTracking = Math.random() < 0.3; // 30% chance to be a tracking enemy
+        this.enemies.push(new Enemy(this, x, y, hp, isTracking));
     }
 
     checkCollisions() {
@@ -161,15 +169,10 @@ class Game {
         this.projectiles.forEach(projectile => {
             this.enemies.forEach(enemy => {
                 // Simple circle vs AABB (rectangle) collision
-                // Find the closest point to the circle within the rectangle
                 let closestX = Math.max(enemy.x, Math.min(projectile.x, enemy.x + enemy.width));
                 let closestY = Math.max(enemy.y, Math.min(projectile.y, enemy.y + enemy.height));
-
-                // Calculate the distance between the circle's center and this closest point
                 let distanceX = projectile.x - closestX;
                 let distanceY = projectile.y - closestY;
-
-                // If the distance is less than the circle's radius, an intersection occurs
                 let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
                 if (distanceSquared < (projectile.radius * projectile.radius)) {
                     projectile.markedForDeletion = true;
@@ -179,6 +182,23 @@ class Game {
                     }
                 }
             });
+        });
+
+        // Enemy Projectiles vs Player
+        this.enemyProjectiles.forEach(projectile => {
+            let closestX = Math.max(this.player.x, Math.min(projectile.x, this.player.x + this.player.width));
+            let closestY = Math.max(this.player.y, Math.min(projectile.y, this.player.y + this.player.height));
+            let distanceX = projectile.x - closestX;
+            let distanceY = projectile.y - closestY;
+            let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+            
+            if (distanceSquared < (projectile.radius * projectile.radius)) {
+                projectile.markedForDeletion = true;
+                this.player.hp -= projectile.damage;
+                if (this.player.hp <= 0) {
+                    this.gameState = 'GAMEOVER';
+                }
+            }
         });
 
         // Player vs Enemies

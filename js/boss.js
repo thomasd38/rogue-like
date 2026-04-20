@@ -16,23 +16,65 @@ class Boss {
         this.speedX = 2;
         this.direction = 1;
 
+        // Laser state
+        this.laserState = 'IDLE'; // IDLE, WARNING, FIRING
+        this.laserTimer = 0;
+        this.laserDurationWarning = 60; // 1 second warning
+        this.laserDurationFiring = 30; // 0.5 second firing
+        this.laserCooldown = 300 + Math.random() * 120; // 5-7 seconds
+
+        // Projectile state
+        this.projectileTimer = 0;
+        this.projectileInterval = 120; // 2 seconds
+
         // Spawning
         this.spawnTimer = 0;
         this.spawnInterval = 90; // Spawn an enemy every 1.5 seconds
     }
 
     update() {
-        // Movement: Bounce off walls
-        this.x += this.speedX * this.direction;
-        if (this.x <= 0 || this.x + this.width >= this.game.width) {
-            this.direction *= -1;
-        }
+        if (this.laserState === 'IDLE') {
+            // Movement: Bounce off walls
+            this.x += this.speedX * this.direction;
+            if (this.x <= 0 || this.x + this.width >= this.game.width) {
+                this.direction *= -1;
+            }
 
-        // Spawning enemies
-        this.spawnTimer++;
-        if (this.spawnTimer >= this.spawnInterval) {
-            this.spawnMinion();
-            this.spawnTimer = 0;
+            // Laser logic
+            this.laserTimer++;
+            if (this.laserTimer >= this.laserCooldown) {
+                this.laserState = 'WARNING';
+                this.laserTimer = 0;
+            }
+
+            // Projectile logic
+            this.projectileTimer++;
+            if (this.projectileTimer >= this.projectileInterval) {
+                this.shootProjectile();
+                this.projectileTimer = 0;
+            }
+
+            // Spawning enemies
+            this.spawnTimer++;
+            if (this.spawnTimer >= this.spawnInterval) {
+                this.spawnMinion();
+                this.spawnTimer = 0;
+            }
+        } else if (this.laserState === 'WARNING') {
+            this.laserTimer++;
+            if (this.laserTimer >= this.laserDurationWarning) {
+                this.laserState = 'FIRING';
+                this.laserTimer = 0;
+                // Deal damage immediately if player is under
+                this.checkLaserCollision();
+            }
+        } else if (this.laserState === 'FIRING') {
+            this.laserTimer++;
+            if (this.laserTimer >= this.laserDurationFiring) {
+                this.laserState = 'IDLE';
+                this.laserTimer = 0;
+                this.laserCooldown = 300 + Math.random() * 120;
+            }
         }
     }
 
@@ -54,6 +96,38 @@ class Boss {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(this.hp, this.x + this.width / 2, this.y + this.height / 2);
+        
+        // Draw Laser
+        if (this.laserState === 'WARNING') {
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.3)';
+            ctx.fillRect(this.x + this.width / 2 - 10, this.y + this.height, 20, this.game.height);
+        } else if (this.laserState === 'FIRING') {
+            ctx.fillStyle = 'rgba(255, 0, 0, 0.9)';
+            ctx.fillRect(this.x + this.width / 2 - 20, this.y + this.height, 40, this.game.height);
+        }
+    }
+
+    shootProjectile() {
+        const pX = this.x + this.width / 2;
+        const pY = this.y + this.height;
+        const targetX = this.game.player.x + this.game.player.width / 2;
+        const targetY = this.game.player.y + this.game.player.height / 2;
+        
+        this.game.enemyProjectiles.push(new EnemyProjectile(pX, pY, 8, 6, 1, targetX, targetY));
+    }
+
+    checkLaserCollision() {
+        const laserLeft = this.x + this.width / 2 - 20;
+        const laserRight = this.x + this.width / 2 + 20;
+        const playerLeft = this.game.player.x;
+        const playerRight = this.game.player.x + this.game.player.width;
+
+        if (playerRight > laserLeft && playerLeft < laserRight) {
+            this.game.player.hp -= 2; // massive damage
+            if (this.game.player.hp <= 0) {
+                this.game.gameState = 'GAMEOVER';
+            }
+        }
     }
 
     spawnMinion() {
