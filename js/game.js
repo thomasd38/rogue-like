@@ -3,6 +3,12 @@ class Game {
         this.width = canvasWidth;
         this.height = canvasHeight;
         this.input = new InputHandler();
+        this.fastPlay = false;
+        this.reset();
+    }
+
+    reset(options = {}) {
+        this.fastPlay = options.fastPlay ?? this.fastPlay ?? false;
         this.player = new Player(this);
         this.projectiles = [];
         this.enemyProjectiles = [];
@@ -12,15 +18,34 @@ class Game {
         this.enemyInterval = this.baseEnemyInterval;
 
         // Wave state
-        this.gameState = 'PLAYING'; // PLAYING, UPGRADE, GAMEOVER
+        this.gameState = 'MENU'; // MENU, PLAYING, PAUSED, UPGRADE, GAMEOVER
         this.wave = 1;
         this.isBossWave = false;
         this.boss = null;
 
         // Time based wave
-        this.waveDuration = 30 * 60; // 60 seconds at 60fps
+        this.waveDuration = this.fastPlay ? 3 * 60 : 30 * 60;
         this.waveTimeLeft = this.waveDuration;
         this.waveElapsedTime = 0;
+    }
+
+    startGame(options = {}) {
+        this.reset(options);
+        this.gameState = 'PLAYING';
+    }
+
+    setPaused(isPaused) {
+        if (isPaused && this.gameState === 'PLAYING') {
+            this.gameState = 'PAUSED';
+        } else if (!isPaused && this.gameState === 'PAUSED') {
+            this.gameState = 'PLAYING';
+        }
+    }
+
+    setGameOver() {
+        if (this.gameState === 'GAMEOVER') return;
+        this.gameState = 'GAMEOVER';
+        window.dispatchEvent(new Event('gameOver'));
     }
 
     update() {
@@ -46,7 +71,9 @@ class Game {
                 this.boss = null;
                 this.enemies = [];
                 this.enemyProjectiles = [];
-                window.dispatchEvent(new Event('waveCleared'));
+                window.dispatchEvent(new CustomEvent('waveCleared', {
+                    detail: { wasBossWave: true }
+                }));
             }
         } else {
             // Update wave timers
@@ -82,6 +109,9 @@ class Game {
                 // Clear all enemies for next wave
                 this.enemies = [];
                 this.enemyProjectiles = [];
+                window.dispatchEvent(new CustomEvent('waveCleared', {
+                    detail: { wasBossWave: false }
+                }));
                 this.startNextWave();
             }
         }
@@ -92,7 +122,7 @@ class Game {
         ctx.clearRect(0, 0, this.width, this.height);
 
         // Draw wave text if playing
-        if (this.gameState === 'PLAYING') {
+        if (this.gameState === 'PLAYING' || this.gameState === 'PAUSED' || this.gameState === 'UPGRADE') {
             ctx.fillStyle = '#fff';
             ctx.font = '20px monospace';
             ctx.textAlign = 'right';
@@ -104,21 +134,16 @@ class Game {
                 ctx.font = '16px monospace';
                 ctx.fillText(`BOSS WAVE`, this.width - 10, 35);
             } else {
+                ctx.fillStyle = '#fff';
                 ctx.font = '14px monospace';
                 const secondsLeft = Math.ceil(this.waveTimeLeft / 60);
                 ctx.fillText(`Time Left: ${secondsLeft}s`, this.width - 10, 35);
             }
-        }
 
-        if (this.gameState === 'GAMEOVER') {
-            ctx.fillStyle = '#f00';
-            ctx.font = '40px monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText('GAME OVER', this.width / 2, this.height / 2);
-            ctx.font = '20px monospace';
-            ctx.fillStyle = '#fff';
-            ctx.fillText('Refresh to restart', this.width / 2, this.height / 2 + 40);
-            return;
+            if (this.fastPlay) {
+                ctx.fillStyle = '#ffd54a';
+                ctx.fillText('FAST PLAY', this.width - 10, 55);
+            }
         }
 
         this.player.draw(ctx);
@@ -162,7 +187,7 @@ class Game {
 
                 this.player.takeDamage(3);
                 if (this.player.hp <= 0) {
-                    this.gameState = 'GAMEOVER';
+                    this.setGameOver();
                 }
             }
         }
@@ -205,7 +230,7 @@ class Game {
                 projectile.markedForDeletion = true;
                 this.player.takeDamage(projectile.damage);
                 if (this.player.hp <= 0) {
-                    this.gameState = 'GAMEOVER';
+                    this.setGameOver();
                 }
             }
         });
@@ -222,7 +247,7 @@ class Game {
                 this.player.takeDamage(1);
 
                 if (this.player.hp <= 0) {
-                    this.gameState = 'GAMEOVER';
+                    this.setGameOver();
                 }
             }
         });
@@ -272,6 +297,7 @@ class Game {
         if (this.isBossWave) {
             this.boss = new Boss(this, this.wave);
         } else {
+            this.waveDuration = this.fastPlay ? 3 * 60 : 30 * 60;
             this.waveTimeLeft = this.waveDuration;
             this.waveElapsedTime = 0;
             this.baseEnemyInterval = Math.max(20, this.baseEnemyInterval - 5);

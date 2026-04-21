@@ -9,16 +9,43 @@
 <body>
     <div id="game-container">
         <canvas id="gameCanvas" width="600" height="800"></canvas>
-        
-        <div id="upgrade-menu" class="hidden">
-            <h2>Boss Defeated!</h2>
+
+        <div id="main-menu" class="overlay-menu">
+            <h2>Cannon Roguelike</h2>
+            <p>Choisis un mode pour commencer</p>
+            <div class="menu-buttons">
+                <button id="start-btn" class="menu-btn">Start</button>
+                <button id="fast-play-btn" class="menu-btn">Fast Play (3s/wave)</button>
+            </div>
+        </div>
+
+        <div id="pause-menu" class="overlay-menu hidden">
+            <h2>Pause</h2>
+            <div class="menu-buttons">
+                <button id="resume-btn" class="menu-btn">Resume</button>
+                <button id="restart-btn" class="menu-btn">Restart Run</button>
+                <button id="pause-main-btn" class="menu-btn">Main Menu</button>
+            </div>
+        </div>
+
+        <div id="game-over-menu" class="overlay-menu hidden">
+            <h2>Game Over</h2>
+            <p>Appuie sur R ou utilise un bouton.</p>
+            <div class="menu-buttons">
+                <button id="gameover-restart-btn" class="menu-btn">Restart Run</button>
+                <button id="gameover-main-btn" class="menu-btn">Main Menu</button>
+            </div>
+        </div>
+
+        <div id="upgrade-menu" class="overlay-menu hidden">
+            <h2 id="upgrade-title">Boss Defeated!</h2>
             <p>Select a reward upgrade</p>
             <div id="upgrade-options">
                 <!-- Buttons will be injected here by JS -->
             </div>
         </div>
     </div>
-    
+
     <script src="js/input.js"></script>
     <script src="js/upgrades.js"></script>
     <script src="js/projectile.js"></script>
