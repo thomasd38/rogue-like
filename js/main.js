@@ -168,7 +168,7 @@ window.addEventListener('load', () => {
                 const btn = document.createElement('button');
                 btn.className = 'upgrade-btn';
                 btn.style.setProperty('--rarity-color', upgrade.rarity.color);
-                btn.innerHTML = `<strong>${upgrade.name} [${upgrade.rarity.name}]</strong>${upgrade.description}`;
+                btn.innerHTML = `<strong>${upgrade.name}</strong>${upgrade.description}`;
                 btn.onclick = () => {
                     upgrade.apply(game.player);
                     closeMenu();
