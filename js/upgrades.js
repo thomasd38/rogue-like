@@ -8,11 +8,17 @@ const RARITIES = [
 
 const RARITY_ORDER = RARITIES.map(r => r.id);
 const getRarityById = (id) => RARITIES.find(r => r.id === id);
+const UPGRADE_REWARD_TYPES = {
+    CLASSIC: 'classic',
+    UNIQUE: 'unique'
+};
+const MIN_UNIQUE_RARITY_INDEX = RARITY_ORDER.indexOf('uncommon');
 
 const UPGRADE_TYPES = [
     {
         id: 'damage_up',
         name: 'Damage',
+        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
             { rarity: 'common', value: 5 },
             { rarity: 'uncommon', value: 8 },
@@ -26,6 +32,7 @@ const UPGRADE_TYPES = [
     {
         id: 'fire_rate_up',
         name: 'Fire Rate',
+        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
             { rarity: 'common', value: 10 },
             { rarity: 'uncommon', value: 15 },
@@ -41,6 +48,7 @@ const UPGRADE_TYPES = [
     {
         id: 'multi_shot',
         name: 'Multi-Shot',
+        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
             { rarity: 'common', value: 1 },
             { rarity: 'uncommon', value: 1 },
@@ -54,6 +62,7 @@ const UPGRADE_TYPES = [
     {
         id: 'heal',
         name: 'Vitality',
+        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
             { rarity: 'common', value: 1 },
             { rarity: 'uncommon', value: 1 },
@@ -76,6 +85,7 @@ const UPGRADE_TYPES = [
     {
         id: 'speed_up',
         name: 'Speed',
+        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
             { rarity: 'common', value: 1 },
             { rarity: 'uncommon', value: 1.5 },
@@ -89,6 +99,7 @@ const UPGRADE_TYPES = [
     {
         id: 'pierce_rounds',
         name: 'Pierce',
+        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
             { rarity: 'uncommon', value: 1 },
             { rarity: 'rare', value: 2 },
@@ -100,6 +111,7 @@ const UPGRADE_TYPES = [
     {
         id: 'explosive_rounds',
         name: 'Explosive',
+        rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [
             { rarity: 'rare', value: 45 },
             { rarity: 'epic', value: 60 },
@@ -111,6 +123,7 @@ const UPGRADE_TYPES = [
     {
         id: 'critical_boost',
         name: 'Crit',
+        rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [
             { rarity: 'rare', value: { chance: 0.12, mult: 0.35 } },
             { rarity: 'epic', value: { chance: 0.18, mult: 0.5 } },
@@ -125,6 +138,7 @@ const UPGRADE_TYPES = [
     {
         id: 'charged_shot',
         name: 'Charged Shot',
+        rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [
             { rarity: 'epic', value: 8 },
             { rarity: 'legendary', value: 6 }
@@ -138,6 +152,7 @@ const UPGRADE_TYPES = [
     {
         id: 'cyclic_shield',
         name: 'Cyclic Shield',
+        rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [
             { rarity: 'rare', value: 25 },
             { rarity: 'epic', value: 18 },
@@ -153,6 +168,7 @@ const UPGRADE_TYPES = [
     {
         id: 'light_vampirism',
         name: 'Light Vampirism',
+        rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [
             { rarity: 'rare', value: 14 },
             { rarity: 'epic', value: 10 }
@@ -166,6 +182,7 @@ const UPGRADE_TYPES = [
     {
         id: 'iframes',
         name: 'i-frames',
+        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
             { rarity: 'uncommon', value: 30 },
             { rarity: 'rare', value: 45 },
@@ -177,6 +194,7 @@ const UPGRADE_TYPES = [
     {
         id: 'slow_on_hit',
         name: 'Slow on Hit',
+        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
             { rarity: 'uncommon', value: 0.2 },
             { rarity: 'rare', value: 0.3 },
@@ -188,7 +206,7 @@ const UPGRADE_TYPES = [
     {
         id: 'wave_economy',
         name: 'Wave Economy',
-        bossWaveOnly: true,
+        rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [{ rarity: 'rare', value: 1 }],
         getDescription: () => '+1 reroll in boss upgrade rewards',
         apply: (player) => { player.upgradeRerolls += 1; }
@@ -196,12 +214,25 @@ const UPGRADE_TYPES = [
     {
         id: 'mad_buyer',
         name: 'Mad Buyer',
-        bossWaveOnly: true,
+        rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [{ rarity: 'epic', value: 1 }],
         getDescription: () => '+1 choice in boss upgrade rewards',
         apply: (player) => { player.upgradeChoicesBonus += 1; }
     }
 ];
+
+const isUniqueUpgradeValid = (upgradeType) => {
+    if (upgradeType.rewardType !== UPGRADE_REWARD_TYPES.UNIQUE) return true;
+    return upgradeType.tiers.every((tier) => RARITY_ORDER.indexOf(tier.rarity) >= MIN_UNIQUE_RARITY_INDEX);
+};
+
+if (!UPGRADE_TYPES.every((type) => type.rewardType === UPGRADE_REWARD_TYPES.CLASSIC || type.rewardType === UPGRADE_REWARD_TYPES.UNIQUE)) {
+    throw new Error('Each upgrade must belong to exactly one reward type: classic or unique.');
+}
+
+if (!UPGRADE_TYPES.every(isUniqueUpgradeValid)) {
+    throw new Error('Unique upgrades must be at least uncommon rarity.');
+}
 
 class UpgradeManager {
     static getRandomRarity(allowedRarityIds) {
@@ -218,7 +249,8 @@ class UpgradeManager {
 
     static getRandomUpgrades(count = 3, options = {}) {
         const { wasBossWave = false } = options;
-        const eligibleTypes = UPGRADE_TYPES.filter(type => !type.bossWaveOnly || wasBossWave);
+        const targetRewardType = wasBossWave ? UPGRADE_REWARD_TYPES.UNIQUE : UPGRADE_REWARD_TYPES.CLASSIC;
+        const eligibleTypes = UPGRADE_TYPES.filter((type) => type.rewardType === targetRewardType);
         const shuffledTypes = [...eligibleTypes].sort(() => 0.5 - Math.random());
         const selectedTypes = shuffledTypes.slice(0, count);
 
