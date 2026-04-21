@@ -109,10 +109,23 @@ class Game {
                 // Clear all enemies for next wave
                 this.enemies = [];
                 this.enemyProjectiles = [];
+                const wasBossWave = false;
+                const shouldOpenRewardMenu = this.fastPlay;
+
+                if (shouldOpenRewardMenu) {
+                    this.gameState = 'UPGRADE';
+                }
+
                 window.dispatchEvent(new CustomEvent('waveCleared', {
-                    detail: { wasBossWave: false }
+                    detail: {
+                        wasBossWave,
+                        shouldOpenRewardMenu
+                    }
                 }));
-                this.startNextWave();
+
+                if (!shouldOpenRewardMenu) {
+                    this.startNextWave();
+                }
             }
         }
     }
