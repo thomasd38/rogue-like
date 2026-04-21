@@ -1,13 +1,49 @@
 window.addEventListener('load', () => {
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    
+
+    const mainMenu = document.getElementById('main-menu');
+    const pauseMenu = document.getElementById('pause-menu');
+    const gameOverMenu = document.getElementById('game-over-menu');
+    const upgradeMenu = document.getElementById('upgrade-menu');
+    const upgradeTitle = document.getElementById('upgrade-title');
+
+    const startBtn = document.getElementById('start-btn');
+    const fastPlayBtn = document.getElementById('fast-play-btn');
+    const resumeBtn = document.getElementById('resume-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const pauseToMainBtn = document.getElementById('pause-main-btn');
+    const gameOverRestartBtn = document.getElementById('gameover-restart-btn');
+    const gameOverMainBtn = document.getElementById('gameover-main-btn');
+
     // Create the game instance
     const game = new Game(canvas.width, canvas.height);
 
     const fps = 60;
     const interval = 1000 / fps;
     let then = performance.now();
+
+    let currentFastPlay = false;
+
+    const hideAllMenus = () => {
+        mainMenu.classList.add('hidden');
+        pauseMenu.classList.add('hidden');
+        gameOverMenu.classList.add('hidden');
+        upgradeMenu.classList.add('hidden');
+    };
+
+    const startNewRun = (fastPlayMode) => {
+        currentFastPlay = fastPlayMode;
+        hideAllMenus();
+        game.startGame({ fastPlay: fastPlayMode });
+        canvas.focus();
+    };
+
+    const showMainMenu = () => {
+        game.reset({ fastPlay: false });
+        hideAllMenus();
+        mainMenu.classList.remove('hidden');
+    };
 
     function animate(now) {
         requestAnimationFrame(animate);
@@ -16,21 +52,29 @@ window.addEventListener('load', () => {
 
         if (delta > interval) {
             then = now - (delta % interval);
-            
+
             game.update();
             game.draw(ctx);
         }
     }
 
     // Handle Upgrades
-    window.addEventListener('waveCleared', () => {
-        const upgradeMenu = document.getElementById('upgrade-menu');
+    window.addEventListener('waveCleared', (event) => {
+        const wasBossWave = event.detail?.wasBossWave === true;
+
+        if (!wasBossWave) {
+            // Normal wave cleared: no upgrade menu, and make sure wording bug does not appear.
+            return;
+        }
+
         const upgradeOptions = document.getElementById('upgrade-options');
         const optionCount = 3 + game.player.upgradeChoicesBonus;
         let rerollsLeft = game.player.upgradeRerolls;
-        
+
         const buttons = [];
         let selectedIndex = 0;
+
+        upgradeTitle.textContent = wasBossWave ? 'Boss Defeated!' : 'Wave Cleared!';
 
         const handleMenuKeydown = (e) => {
             if (game.gameState !== 'UPGRADE' || buttons.length === 0) return;
@@ -100,10 +144,47 @@ window.addEventListener('load', () => {
 
         window.addEventListener('keydown', handleMenuKeydown);
         renderOptions();
-
-        // Show menu
+        hideAllMenus();
         upgradeMenu.classList.remove('hidden');
     });
+
+    window.addEventListener('gameOver', () => {
+        hideAllMenus();
+        gameOverMenu.classList.remove('hidden');
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'Escape') {
+            if (game.gameState === 'PLAYING') {
+                game.setPaused(true);
+                hideAllMenus();
+                pauseMenu.classList.remove('hidden');
+            } else if (game.gameState === 'PAUSED') {
+                game.setPaused(false);
+                pauseMenu.classList.add('hidden');
+            }
+        }
+
+        if (game.gameState === 'GAMEOVER' && e.code === 'KeyR') {
+            startNewRun(currentFastPlay);
+        }
+    });
+
+    startBtn.addEventListener('click', () => startNewRun(false));
+    fastPlayBtn.addEventListener('click', () => startNewRun(true));
+
+    resumeBtn.addEventListener('click', () => {
+        game.setPaused(false);
+        pauseMenu.classList.add('hidden');
+    });
+
+    restartBtn.addEventListener('click', () => startNewRun(currentFastPlay));
+    pauseToMainBtn.addEventListener('click', showMainMenu);
+
+    gameOverRestartBtn.addEventListener('click', () => startNewRun(currentFastPlay));
+    gameOverMainBtn.addEventListener('click', showMainMenu);
+
+    showMainMenu();
 
     // Start loop
     animate(performance.now());
