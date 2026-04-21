@@ -145,7 +145,8 @@ class Game {
             if (this.isBossWave) {
                 ctx.fillStyle = '#f0f';
                 ctx.font = '16px monospace';
-                ctx.fillText(`BOSS WAVE`, this.width - 10, 35);
+                const bossName = this.boss ? this.boss.type.label : 'BOSS';
+                ctx.fillText(`BOSS: ${bossName}`, this.width - 10, 35);
             } else {
                 ctx.fillStyle = '#fff';
                 ctx.font = '14px monospace';
@@ -167,11 +168,38 @@ class Game {
     }
 
     spawnEnemy() {
-        const x = Math.random() * (this.width - 40);
-        const y = -40; // Just above screen
-        const hp = 10 + Math.floor(Math.random() * 20); // random HP 10-30
-        const isTracking = Math.random() < 0.3; // 30% chance to be a tracking enemy
-        this.enemies.push(new Enemy(this, x, y, hp, isTracking));
+        const progression = Math.min(1, (this.wave - 1) / 14);
+
+        const weightedTypes = [
+            { key: 'GRUNT', weight: 30 },
+            { key: 'TRACKER', weight: 14 + this.wave },
+            { key: 'ZIGZAG', weight: this.wave >= 2 ? 12 + this.wave : 0 },
+            { key: 'DASHER', weight: this.wave >= 3 ? 10 + this.wave : 0 },
+            { key: 'SHOOTER', weight: this.wave >= 4 ? 10 + this.wave : 0 },
+            { key: 'TANK', weight: this.wave >= 5 ? 8 + this.wave : 0 },
+            { key: 'SPLITTER', weight: this.wave >= 6 ? 7 + this.wave : 0 },
+            { key: 'HEALER', weight: this.wave >= 7 ? 6 + this.wave : 0 }
+        ].filter(entry => entry.weight > 0);
+
+        const totalWeight = weightedTypes.reduce((sum, type) => sum + type.weight, 0);
+        let roll = Math.random() * totalWeight;
+        let selectedType = weightedTypes[0].key;
+
+        for (const option of weightedTypes) {
+            roll -= option.weight;
+            if (roll <= 0) {
+                selectedType = option.key;
+                break;
+            }
+        }
+
+        const template = Enemy.TYPES[selectedType];
+        const x = Math.random() * (this.width - template.width);
+        const y = -template.height - Math.random() * 40;
+        const baseHp = template.baseHp[0] + Math.random() * (template.baseHp[1] - template.baseHp[0]);
+        const hp = Math.round(baseHp * (1 + progression * 1.2));
+
+        this.enemies.push(new Enemy(this, x, y, hp, selectedType === 'TRACKER', selectedType));
     }
 
     checkCollisions() {
@@ -225,6 +253,7 @@ class Game {
                     this.handleProjectileAfterHit(projectile);
                     if (enemy.hp <= 0) {
                         enemy.markedForDeletion = true;
+                        enemy.onDeath();
                         this.player.registerKill();
                     }
                 }
@@ -286,6 +315,7 @@ class Game {
                 enemy.hp -= damage;
                 if (enemy.hp <= 0) {
                     enemy.markedForDeletion = true;
+                    enemy.onDeath();
                     this.player.registerKill();
                 }
             }

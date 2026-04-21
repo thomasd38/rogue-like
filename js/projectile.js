@@ -17,6 +17,7 @@ class Projectile {
         this.markedForDeletion = false;
     }
 
+
     update() {
         this.x += this.vx;
         this.y += this.vy;
@@ -40,13 +41,14 @@ class Projectile {
 }
 
 class EnemyProjectile {
-    constructor(x, y, radius, speed, damage, targetX, targetY) {
+    constructor(x, y, radius, speed, damage, targetX, targetY, options = {}) {
         this.x = x;
         this.y = y;
         this.radius = radius;
         this.speed = speed;
         this.damage = damage;
         this.markedForDeletion = false;
+        this.color = options.color || '#f0f';
 
         // Calculate velocity towards target
         const dx = targetX - x;
@@ -55,6 +57,16 @@ class EnemyProjectile {
         
         this.vx = (dx / distance) * speed;
         this.vy = (dy / distance) * speed;
+    }
+
+
+    static fromAngle(x, y, radius, speed, damage, angle, options = {}) {
+        const targetX = x + Math.cos(angle) * 100;
+        const targetY = y + Math.sin(angle) * 100;
+        const projectile = new EnemyProjectile(x, y, radius, speed, damage, targetX, targetY, options);
+        projectile.vx = Math.cos(angle) * speed;
+        projectile.vy = Math.sin(angle) * speed;
+        return projectile;
     }
 
     update() {
@@ -68,7 +80,7 @@ class EnemyProjectile {
     }
 
     draw(ctx) {
-        ctx.fillStyle = '#f0f'; // Purple to match boss
+        ctx.fillStyle = this.color;
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
