@@ -32,6 +32,48 @@ window.addEventListener('load', () => {
         upgradeMenu.classList.add('hidden');
     };
 
+    const setupMenuKeyboardNavigation = (menuButtons, isMenuActive) => {
+        let selectedIndex = 0;
+
+        const focusCurrentButton = () => {
+            if (menuButtons.length === 0) return;
+            menuButtons[selectedIndex].focus();
+        };
+
+        menuButtons.forEach((button, index) => {
+            button.addEventListener('mouseenter', () => {
+                selectedIndex = index;
+                focusCurrentButton();
+            });
+        });
+
+        const handleMenuKeydown = (e) => {
+            if (!isMenuActive()) return;
+
+            if (['ArrowUp', 'KeyW', 'KeyZ'].includes(e.code)) {
+                e.preventDefault();
+                selectedIndex = (selectedIndex > 0) ? selectedIndex - 1 : menuButtons.length - 1;
+                focusCurrentButton();
+            } else if (['ArrowDown', 'KeyS'].includes(e.code)) {
+                e.preventDefault();
+                selectedIndex = (selectedIndex < menuButtons.length - 1) ? selectedIndex + 1 : 0;
+                focusCurrentButton();
+            } else if (['Enter', 'Space'].includes(e.code)) {
+                e.preventDefault();
+                menuButtons[selectedIndex].click();
+            }
+        };
+
+        window.addEventListener('keydown', handleMenuKeydown);
+
+        return {
+            focusFirst: () => {
+                selectedIndex = 0;
+                focusCurrentButton();
+            }
+        };
+    };
+
     const startNewRun = (fastPlayMode) => {
         currentFastPlay = fastPlayMode;
         hideAllMenus();
@@ -43,6 +85,7 @@ window.addEventListener('load', () => {
         game.reset({ fastPlay: false });
         hideAllMenus();
         mainMenu.classList.remove('hidden');
+        mainMenuKeyboard.focusFirst();
     };
 
     function animate(now) {
@@ -61,8 +104,9 @@ window.addEventListener('load', () => {
     // Handle Upgrades
     window.addEventListener('waveCleared', (event) => {
         const wasBossWave = event.detail?.wasBossWave === true;
+        const shouldOpenRewardMenu = wasBossWave || event.detail?.shouldOpenRewardMenu === true;
 
-        if (!wasBossWave) {
+        if (!shouldOpenRewardMenu) {
             // Normal wave cleared: no upgrade menu, and make sure wording bug does not appear.
             return;
         }
@@ -151,6 +195,7 @@ window.addEventListener('load', () => {
     window.addEventListener('gameOver', () => {
         hideAllMenus();
         gameOverMenu.classList.remove('hidden');
+        gameOverRestartBtn.focus();
     });
 
     window.addEventListener('keydown', (e) => {
@@ -159,9 +204,11 @@ window.addEventListener('load', () => {
                 game.setPaused(true);
                 hideAllMenus();
                 pauseMenu.classList.remove('hidden');
+                pauseMenuKeyboard.focusFirst();
             } else if (game.gameState === 'PAUSED') {
                 game.setPaused(false);
                 pauseMenu.classList.add('hidden');
+                canvas.focus();
             }
         }
 
@@ -183,6 +230,16 @@ window.addEventListener('load', () => {
 
     gameOverRestartBtn.addEventListener('click', () => startNewRun(currentFastPlay));
     gameOverMainBtn.addEventListener('click', showMainMenu);
+
+    const mainMenuKeyboard = setupMenuKeyboardNavigation(
+        [startBtn, fastPlayBtn],
+        () => !mainMenu.classList.contains('hidden')
+    );
+
+    const pauseMenuKeyboard = setupMenuKeyboardNavigation(
+        [resumeBtn, restartBtn, pauseToMainBtn],
+        () => !pauseMenu.classList.contains('hidden')
+    );
 
     showMainMenu();
 
