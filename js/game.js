@@ -79,11 +79,10 @@ class Game {
 
             // Check for wave clear
             if (this.waveTimeLeft <= 0) {
-                this.gameState = 'UPGRADE';
                 // Clear all enemies for next wave
                 this.enemies = [];
                 this.enemyProjectiles = [];
-                window.dispatchEvent(new Event('waveCleared'));
+                this.startNextWave();
             }
         }
     }
@@ -147,8 +146,11 @@ class Game {
                 let distanceY = projectile.y - closestY;
                 let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
                 if (distanceSquared < (projectile.radius * projectile.radius)) {
-                    projectile.markedForDeletion = true;
                     this.boss.hp -= projectile.damage;
+                    this.handleProjectileAfterHit(projectile);
+                    if (projectile.explosiveRadius > 0) {
+                        this.triggerExplosion(projectile.x, projectile.y, projectile.explosiveRadius, projectile.damage, true);
+                    }
                 }
             });
 
@@ -158,7 +160,7 @@ class Game {
                 this.player.y < this.boss.y + this.boss.height &&
                 this.player.y + this.player.height > this.boss.y) {
 
-                this.player.hp -= 3;
+                this.player.takeDamage(3);
                 if (this.player.hp <= 0) {
                     this.gameState = 'GAMEOVER';
                 }
@@ -175,10 +177,17 @@ class Game {
                 let distanceY = projectile.y - closestY;
                 let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
                 if (distanceSquared < (projectile.radius * projectile.radius)) {
-                    projectile.markedForDeletion = true;
                     enemy.hp -= projectile.damage;
+                    if (projectile.slowAmount > 0) {
+                        enemy.applySlow(projectile.slowAmount, projectile.slowDuration);
+                    }
+                    if (projectile.explosiveRadius > 0) {
+                        this.triggerExplosion(projectile.x, projectile.y, projectile.explosiveRadius, projectile.damage, false, enemy);
+                    }
+                    this.handleProjectileAfterHit(projectile);
                     if (enemy.hp <= 0) {
                         enemy.markedForDeletion = true;
+                        this.player.registerKill();
                     }
                 }
             });
@@ -194,7 +203,7 @@ class Game {
 
             if (distanceSquared < (projectile.radius * projectile.radius)) {
                 projectile.markedForDeletion = true;
-                this.player.hp -= projectile.damage;
+                this.player.takeDamage(projectile.damage);
                 if (this.player.hp <= 0) {
                     this.gameState = 'GAMEOVER';
                 }
@@ -210,13 +219,50 @@ class Game {
                 this.player.y + this.player.height > enemy.y) {
 
                 enemy.markedForDeletion = true;
-                this.player.hp--;
+                this.player.takeDamage(1);
 
                 if (this.player.hp <= 0) {
                     this.gameState = 'GAMEOVER';
                 }
             }
         });
+    }
+
+    handleProjectileAfterHit(projectile) {
+        if (projectile.pierceRemaining > 0) {
+            projectile.pierceRemaining--;
+        } else {
+            projectile.markedForDeletion = true;
+        }
+    }
+
+    triggerExplosion(x, y, radius, sourceDamage, includeBoss = false, ignoreEnemy = null) {
+        this.enemies.forEach(enemy => {
+            if (ignoreEnemy && enemy === ignoreEnemy) return;
+            const enemyCenterX = enemy.x + enemy.width / 2;
+            const enemyCenterY = enemy.y + enemy.height / 2;
+            const distance = Math.hypot(enemyCenterX - x, enemyCenterY - y);
+            if (distance <= radius) {
+                const ratio = Math.max(0, 1 - distance / radius);
+                const damage = Math.max(1, Math.round(sourceDamage * (0.4 + ratio * 0.6)));
+                enemy.hp -= damage;
+                if (enemy.hp <= 0) {
+                    enemy.markedForDeletion = true;
+                    this.player.registerKill();
+                }
+            }
+        });
+
+        if (includeBoss && this.boss) {
+            const closestX = Math.max(this.boss.x, Math.min(x, this.boss.x + this.boss.width));
+            const closestY = Math.max(this.boss.y, Math.min(y, this.boss.y + this.boss.height));
+            const distance = Math.hypot(x - closestX, y - closestY);
+            if (distance <= radius) {
+                const ratio = Math.max(0, 1 - distance / radius);
+                const damage = Math.max(1, Math.round(sourceDamage * (0.35 + ratio * 0.45)));
+                this.boss.hp -= damage;
+            }
+        }
     }
 
     startNextWave() {

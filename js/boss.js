@@ -123,7 +123,7 @@ class Boss {
         const playerRight = this.game.player.x + this.game.player.width;
 
         if (playerRight > laserLeft && playerLeft < laserRight) {
-            this.game.player.hp -= 2; // massive damage
+            this.game.player.takeDamage(2); // massive damage
             if (this.game.player.hp <= 0) {
                 this.game.gameState = 'GAMEOVER';
             }

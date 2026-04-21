@@ -11,10 +11,19 @@ class Enemy {
         this.isTracking = isTracking;
         this.color = this.isTracking ? '#e67e22' : '#f44'; // Orange if tracking, Red if normal
         this.markedForDeletion = false;
+        this.slowMultiplier = 1;
+        this.slowTimer = 0;
     }
 
     update() {
-        this.y += this.speed;
+        if (this.slowTimer > 0) {
+            this.slowTimer--;
+            if (this.slowTimer <= 0) {
+                this.slowMultiplier = 1;
+            }
+        }
+
+        this.y += this.speed * this.slowMultiplier;
 
         if (this.isTracking) {
             // Drift towards player horizontally
@@ -43,5 +52,10 @@ class Enemy {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(this.hp, this.x + this.width / 2, this.y + this.height / 2);
+    }
+
+    applySlow(amount, duration) {
+        this.slowMultiplier = Math.max(0.35, 1 - amount);
+        this.slowTimer = Math.max(this.slowTimer, duration);
     }
 }
