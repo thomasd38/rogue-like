@@ -163,7 +163,7 @@ window.addEventListener('load', () => {
                 upgradeOptions.appendChild(rerollBtn);
             }
 
-            const upgrades = UpgradeManager.getRandomUpgrades(optionCount);
+            const upgrades = UpgradeManager.getRandomUpgrades(optionCount, { wasBossWave });
             upgrades.forEach((upgrade, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'upgrade-btn';
