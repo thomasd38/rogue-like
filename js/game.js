@@ -214,12 +214,14 @@ class Game {
         if (this.boss) {
             // Projectiles vs Boss
             this.projectiles.forEach(projectile => {
+                if (projectile.markedForDeletion || projectile.hitBoss) return;
                 let closestX = Math.max(this.boss.x, Math.min(projectile.x, this.boss.x + this.boss.width));
                 let closestY = Math.max(this.boss.y, Math.min(projectile.y, this.boss.y + this.boss.height));
                 let distanceX = projectile.x - closestX;
                 let distanceY = projectile.y - closestY;
                 let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
                 if (distanceSquared < (projectile.radius * projectile.radius)) {
+                    projectile.hitBoss = true;
                     this.boss.hp -= projectile.damage;
                     this.handleProjectileAfterHit(projectile);
                     if (projectile.explosiveRadius > 0) {
