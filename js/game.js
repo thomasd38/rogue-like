@@ -18,10 +18,13 @@ class Game {
         this.enemyInterval = this.baseEnemyInterval;
 
         // Wave state
-        this.gameState = 'MENU'; // MENU, PLAYING, PAUSED, UPGRADE, GAMEOVER
+        this.gameState = 'MENU'; // MENU, PLAYING, PAUSED, UPGRADE, GAMEOVER, WAVE_CLEAR_DELAY
         this.wave = 1;
         this.isBossWave = false;
         this.boss = null;
+        this.waveClearDelayFrames = 60;
+        this.waveClearTimer = 0;
+        this.waveClearPayload = null;
 
         // Time based wave
         this.waveDuration = this.fastPlay ? 3 * 60 : 30 * 60;
@@ -49,6 +52,27 @@ class Game {
     }
 
     update() {
+        if (this.gameState === 'WAVE_CLEAR_DELAY') {
+            this.waveClearTimer--;
+            if (this.waveClearTimer <= 0 && this.waveClearPayload) {
+                const payload = this.waveClearPayload;
+                this.waveClearPayload = null;
+
+                if (payload.shouldOpenRewardMenu) {
+                    this.gameState = 'UPGRADE';
+                }
+
+                window.dispatchEvent(new CustomEvent('waveCleared', {
+                    detail: payload
+                }));
+
+                if (!payload.shouldOpenRewardMenu) {
+                    this.startNextWave();
+                }
+            }
+            return;
+        }
+
         if (this.gameState !== 'PLAYING') return;
 
         this.player.update(this.input);
@@ -67,13 +91,12 @@ class Game {
             this.enemies = this.enemies.filter(e => !e.markedForDeletion);
 
             if (this.boss.hp <= 0) {
-                this.gameState = 'UPGRADE';
                 this.boss = null;
-                this.enemies = [];
                 this.enemyProjectiles = [];
-                window.dispatchEvent(new CustomEvent('waveCleared', {
-                    detail: { wasBossWave: true }
-                }));
+                this.beginWaveClearSequence({
+                    wasBossWave: true,
+                    shouldOpenRewardMenu: true
+                });
             }
         } else {
             // Update wave timers
@@ -106,26 +129,11 @@ class Game {
 
             // Check for wave clear
             if (this.waveTimeLeft <= 0) {
-                // Clear all enemies for next wave
-                this.enemies = [];
                 this.enemyProjectiles = [];
-                const wasBossWave = false;
-                const shouldOpenRewardMenu = true;
-
-                if (shouldOpenRewardMenu) {
-                    this.gameState = 'UPGRADE';
-                }
-
-                window.dispatchEvent(new CustomEvent('waveCleared', {
-                    detail: {
-                        wasBossWave,
-                        shouldOpenRewardMenu
-                    }
-                }));
-
-                if (!shouldOpenRewardMenu) {
-                    this.startNextWave();
-                }
+                this.beginWaveClearSequence({
+                    wasBossWave: false,
+                    shouldOpenRewardMenu: true
+                });
             }
         }
     }
@@ -236,6 +244,7 @@ class Game {
         // Projectiles vs Enemies
         this.projectiles.forEach(projectile => {
             this.enemies.forEach(enemy => {
+                if (projectile.markedForDeletion || projectile.hitEnemies.has(enemy)) return;
                 // Simple circle vs AABB (rectangle) collision
                 let closestX = Math.max(enemy.x, Math.min(projectile.x, enemy.x + enemy.width));
                 let closestY = Math.max(enemy.y, Math.min(projectile.y, enemy.y + enemy.height));
@@ -243,6 +252,7 @@ class Game {
                 let distanceY = projectile.y - closestY;
                 let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
                 if (distanceSquared < (projectile.radius * projectile.radius)) {
+                    projectile.hitEnemies.add(enemy);
                     enemy.hp -= projectile.damage;
                     if (projectile.slowAmount > 0) {
                         enemy.applySlow(projectile.slowAmount, projectile.slowDuration);
@@ -293,6 +303,25 @@ class Game {
                 }
             }
         });
+    }
+
+    eliminateAllEnemies() {
+        this.enemies.forEach(enemy => {
+            if (enemy.markedForDeletion) return;
+            enemy.markedForDeletion = true;
+            enemy.onDeath();
+            this.player.registerKill();
+        });
+        this.enemies = [];
+    }
+
+    beginWaveClearSequence(payload) {
+        this.eliminateAllEnemies();
+        this.projectiles = [];
+        this.enemyProjectiles = [];
+        this.gameState = 'WAVE_CLEAR_DELAY';
+        this.waveClearPayload = payload;
+        this.waveClearTimer = this.waveClearDelayFrames;
     }
 
     handleProjectileAfterHit(projectile) {
