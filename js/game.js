@@ -110,7 +110,7 @@ class Game {
                 this.enemies = [];
                 this.enemyProjectiles = [];
                 const wasBossWave = false;
-                const shouldOpenRewardMenu = this.fastPlay;
+                const shouldOpenRewardMenu = true;
 
                 if (shouldOpenRewardMenu) {
                     this.gameState = 'UPGRADE';

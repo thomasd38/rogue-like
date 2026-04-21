@@ -188,6 +188,7 @@ const UPGRADE_TYPES = [
     {
         id: 'wave_economy',
         name: 'Wave Economy',
+        bossWaveOnly: true,
         tiers: [{ rarity: 'rare', value: 1 }],
         getDescription: () => '+1 reroll in boss upgrade rewards',
         apply: (player) => { player.upgradeRerolls += 1; }
@@ -195,6 +196,7 @@ const UPGRADE_TYPES = [
     {
         id: 'mad_buyer',
         name: 'Mad Buyer',
+        bossWaveOnly: true,
         tiers: [{ rarity: 'epic', value: 1 }],
         getDescription: () => '+1 choice in boss upgrade rewards',
         apply: (player) => { player.upgradeChoicesBonus += 1; }
@@ -214,8 +216,10 @@ class UpgradeManager {
         return allowed[0]; // Fallback
     }
 
-    static getRandomUpgrades(count = 3) {
-        const shuffledTypes = [...UPGRADE_TYPES].sort(() => 0.5 - Math.random());
+    static getRandomUpgrades(count = 3, options = {}) {
+        const { wasBossWave = false } = options;
+        const eligibleTypes = UPGRADE_TYPES.filter(type => !type.bossWaveOnly || wasBossWave);
+        const shuffledTypes = [...eligibleTypes].sort(() => 0.5 - Math.random());
         const selectedTypes = shuffledTypes.slice(0, count);
 
         return selectedTypes.map(type => {
