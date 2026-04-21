@@ -208,7 +208,7 @@ const UPGRADE_TYPES = [
         name: 'Wave Economy',
         rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [{ rarity: 'rare', value: 1 }],
-        getDescription: () => '+1 reroll in boss upgrade rewards',
+        getDescription: () => '+1 reroll in upgrade rewards',
         apply: (player) => { player.upgradeRerolls += 1; }
     },
     {
@@ -216,7 +216,7 @@ const UPGRADE_TYPES = [
         name: 'Mad Buyer',
         rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [{ rarity: 'epic', value: 1 }],
-        getDescription: () => '+1 choice in boss upgrade rewards',
+        getDescription: () => '+1 choice in upgrade rewards',
         apply: (player) => { player.upgradeChoicesBonus += 1; }
     }
 ];
