@@ -15,6 +15,7 @@ class Projectile {
         this.vx = Math.cos(angle) * speed;
         this.vy = Math.sin(angle) * speed;
         this.markedForDeletion = false;
+        this.hitEnemies = new Set();
     }
 
 
