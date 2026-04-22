@@ -3,8 +3,12 @@ class InputHandler {
         this.keys = {};
         this.canvas = canvas;
         this.touchActive = false;
-        this.touchTargetX = null;
+        this.touchStartX = null;
+        this.touchStartY = null;
+        this.touchCurrentX = null;
+        this.touchCurrentY = null;
         this.activePointerId = null;
+        this.touchThreshold = 15; // Seuil en pixels pour déclencher le mouvement
 
         window.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
@@ -24,13 +28,13 @@ class InputHandler {
             this.canvas.addEventListener('pointerdown', (e) => {
                 if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
                 this.activePointerId = e.pointerId;
-                this.handlePointerPosition(e.clientX);
+                this.startTouch(e.clientX, e.clientY);
                 e.preventDefault();
             }, { passive: false });
 
             window.addEventListener('pointermove', (e) => {
                 if (this.activePointerId === null || e.pointerId !== this.activePointerId) return;
-                this.handlePointerPosition(e.clientX);
+                this.moveTouch(e.clientX, e.clientY);
                 e.preventDefault();
             }, { passive: false });
 
@@ -44,44 +48,56 @@ class InputHandler {
             window.addEventListener('pointerup', stopPointerControl, { passive: true });
             window.addEventListener('pointercancel', stopPointerControl, { passive: true });
         } else {
-            this.canvas.addEventListener('touchstart', (e) => this.handleTouch(e), { passive: false });
-            window.addEventListener('touchmove', (e) => this.handleTouch(e), { passive: false });
+            this.canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length > 0) {
+                    this.startTouch(e.touches[0].clientX, e.touches[0].clientY);
+                }
+                e.preventDefault();
+            }, { passive: false });
+
+            window.addEventListener('touchmove', (e) => {
+                if (e.touches.length > 0) {
+                    this.moveTouch(e.touches[0].clientX, e.touches[0].clientY);
+                }
+                e.preventDefault();
+            }, { passive: false });
+
             window.addEventListener('touchend', () => this.clearTouch(), { passive: true });
             window.addEventListener('touchcancel', () => this.clearTouch(), { passive: true });
         }
     }
 
-    handlePointerPosition(clientX) {
+    getCanvasCoordinates(clientX, clientY) {
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;
-        const localX = (clientX - rect.left) * scaleX;
-
-        this.touchActive = true;
-        this.touchTargetX = Math.max(0, Math.min(this.canvas.width, localX));
+        const scaleY = this.canvas.height / rect.height;
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
     }
 
-    handleTouch(e) {
-        if (e.touches.length === 0) {
-            this.clearTouch();
-            return;
-        }
+    startTouch(clientX, clientY) {
+        const coords = this.getCanvasCoordinates(clientX, clientY);
+        this.touchActive = true;
+        this.touchStartX = coords.x;
+        this.touchStartY = coords.y;
+        this.touchCurrentX = coords.x;
+        this.touchCurrentY = coords.y;
+    }
 
-        const touch = e.touches[0];
-        this.handlePointerPosition(touch.clientX);
-        e.preventDefault();
+    moveTouch(clientX, clientY) {
+        const coords = this.getCanvasCoordinates(clientX, clientY);
+        this.touchCurrentX = coords.x;
+        this.touchCurrentY = coords.y;
     }
 
     clearTouch() {
         this.touchActive = false;
-        this.touchTargetX = null;
-    }
-
-    hasTouchControl() {
-        return this.touchActive && this.touchTargetX !== null;
-    }
-
-    getTouchTargetX() {
-        return this.touchTargetX;
+        this.touchStartX = null;
+        this.touchStartY = null;
+        this.touchCurrentX = null;
+        this.touchCurrentY = null;
     }
 
     isDown(code) {
@@ -89,10 +105,26 @@ class InputHandler {
     }
 
     isLeft() {
-        return this.isDown('ArrowLeft') || this.isDown('KeyQ') || this.isDown('KeyA');
+        const key = this.isDown('ArrowLeft') || this.isDown('KeyQ') || this.isDown('KeyA');
+        const touch = this.touchActive && (this.touchCurrentX - this.touchStartX < -this.touchThreshold);
+        return key || touch;
     }
 
     isRight() {
-        return this.isDown('ArrowRight') || this.isDown('KeyD');
+        const key = this.isDown('ArrowRight') || this.isDown('KeyD');
+        const touch = this.touchActive && (this.touchCurrentX - this.touchStartX > this.touchThreshold);
+        return key || touch;
+    }
+
+    isUp() {
+        const key = this.isDown('ArrowUp') || this.isDown('KeyW') || this.isDown('KeyZ');
+        const touch = this.touchActive && (this.touchCurrentY - this.touchStartY < -this.touchThreshold);
+        return key || touch;
+    }
+
+    isDownDir() {
+        const key = this.isDown('ArrowDown') || this.isDown('KeyS');
+        const touch = this.touchActive && (this.touchCurrentY - this.touchStartY > this.touchThreshold);
+        return key || touch;
     }
 }

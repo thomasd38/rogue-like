@@ -3,7 +3,7 @@ class Game {
         this.width = canvasWidth;
         this.height = canvasHeight;
         this.input = new InputHandler(canvasElement);
-        this.fastPlay = false;
+        this.bossRush = false;
         this.reset();
     }
 
@@ -19,7 +19,7 @@ class Game {
     }
 
     reset(options = {}) {
-        this.fastPlay = options.fastPlay ?? this.fastPlay ?? false;
+        this.bossRush = options.bossRush ?? this.bossRush ?? false;
         this.player = new Player(this);
         this.projectiles = [];
         this.enemyProjectiles = [];
@@ -38,7 +38,7 @@ class Game {
         this.waveClearPayload = null;
 
         // Time based wave
-        this.waveDuration = this.fastPlay ? 3 * 60 : 30 * 60;
+        this.waveDuration = this.bossRush ? 3 * 60 : 30 * 60;
         this.waveTimeLeft = this.waveDuration;
         this.waveElapsedTime = 0;
     }
@@ -173,9 +173,9 @@ class Game {
                 ctx.fillText(`Time Left: ${secondsLeft}s`, this.width - 10, 35);
             }
 
-            if (this.fastPlay) {
+            if (this.bossRush) {
                 ctx.fillStyle = '#ffd54a';
-                ctx.fillText('FAST PLAY', this.width - 10, 55);
+                ctx.fillText('BOSS RUSH', this.width - 10, 55);
             }
         }
 
@@ -382,7 +382,7 @@ class Game {
         if (this.isBossWave) {
             this.boss = new Boss(this, this.wave);
         } else {
-            this.waveDuration = this.fastPlay ? 3 * 60 : 30 * 60;
+            this.waveDuration = this.bossRush ? 3 * 60 : 30 * 60;
             this.waveTimeLeft = this.waveDuration;
             this.waveElapsedTime = 0;
             this.baseEnemyInterval = Math.max(20, this.baseEnemyInterval - 5);

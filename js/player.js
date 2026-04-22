@@ -43,21 +43,25 @@ class Player {
     }
 
     update(input) {
-        // Movement
-        if (input.hasTouchControl()) {
-            this.x = input.getTouchTargetX() - this.width / 2;
-        } else {
-            if (input.isLeft()) {
-                this.x -= this.speed;
-            }
-            if (input.isRight()) {
-                this.x += this.speed;
-            }
+        // Movement (Uniforme pour clavier et mobile)
+        if (input.isLeft()) {
+            this.x -= this.speed;
+        }
+        if (input.isRight()) {
+            this.x += this.speed;
+        }
+        if (input.isUp()) {
+            this.y -= this.speed;
+        }
+        if (input.isDownDir()) {
+            this.y += this.speed;
         }
 
         // Boundaries
         if (this.x < 0) this.x = 0;
         if (this.x + this.width > this.game.width) this.x = this.game.width - this.width;
+        if (this.y < 0) this.y = 0;
+        if (this.y + this.height > this.game.height) this.y = this.game.height - this.height;
 
         if (this.invulnTimer > 0) {
             this.invulnTimer--;

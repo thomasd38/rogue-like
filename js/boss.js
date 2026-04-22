@@ -153,9 +153,9 @@ class Boss {
             if (this.laserTimer >= this.laserDurationWarning) {
                 this.laserState = 'FIRING';
                 this.laserTimer = 0;
-                this.checkLaserCollision();
             }
         } else if (this.laserState === 'FIRING') {
+            this.checkLaserCollision(); // Vérifie les dégâts à CHAQUE frame de tir
             this.laserTimer++;
             if (this.laserTimer >= this.laserDurationFiring) {
                 this.laserState = 'IDLE';

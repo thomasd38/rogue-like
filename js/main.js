@@ -9,7 +9,7 @@ window.addEventListener('load', () => {
     const upgradeTitle = document.getElementById('upgrade-title');
 
     const startBtn = document.getElementById('start-btn');
-    const fastPlayBtn = document.getElementById('fast-play-btn');
+    const bossRushBtn = document.getElementById('boss-rush-btn');
     const resumeBtn = document.getElementById('resume-btn');
     const restartBtn = document.getElementById('restart-btn');
     const pauseToMainBtn = document.getElementById('pause-main-btn');
@@ -52,7 +52,7 @@ window.addEventListener('load', () => {
     const interval = 1000 / fps;
     let then = performance.now();
 
-    let currentFastPlay = false;
+    let currentBossRush = false;
 
     const hideAllMenus = () => {
         mainMenu.classList.add('hidden');
@@ -103,15 +103,15 @@ window.addEventListener('load', () => {
         };
     };
 
-    const startNewRun = (fastPlayMode) => {
-        currentFastPlay = fastPlayMode;
+    const startNewRun = (bossRushMode) => {
+        currentBossRush = bossRushMode;
         hideAllMenus();
-        game.startGame({ fastPlay: fastPlayMode });
+        game.startGame({ bossRush: bossRushMode });
         canvas.focus();
     };
 
     const showMainMenu = () => {
-        game.reset({ fastPlay: false });
+        game.reset({ bossRush: false });
         hideAllMenus();
         mainMenu.classList.remove('hidden');
         mainMenuKeyboard.focusFirst();
@@ -242,26 +242,26 @@ window.addEventListener('load', () => {
         }
 
         if (game.gameState === 'GAMEOVER' && e.code === 'KeyR') {
-            startNewRun(currentFastPlay);
+            startNewRun(currentBossRush);
         }
     });
 
     startBtn.addEventListener('click', () => startNewRun(false));
-    fastPlayBtn.addEventListener('click', () => startNewRun(true));
+    bossRushBtn.addEventListener('click', () => startNewRun(true));
 
     resumeBtn.addEventListener('click', () => {
         game.setPaused(false);
         pauseMenu.classList.add('hidden');
     });
 
-    restartBtn.addEventListener('click', () => startNewRun(currentFastPlay));
+    restartBtn.addEventListener('click', () => startNewRun(currentBossRush));
     pauseToMainBtn.addEventListener('click', showMainMenu);
 
-    gameOverRestartBtn.addEventListener('click', () => startNewRun(currentFastPlay));
+    gameOverRestartBtn.addEventListener('click', () => startNewRun(currentBossRush));
     gameOverMainBtn.addEventListener('click', showMainMenu);
 
     const mainMenuKeyboard = setupMenuKeyboardNavigation(
-        [startBtn, fastPlayBtn],
+        [startBtn, bossRushBtn],
         () => !mainMenu.classList.contains('hidden')
     );
 

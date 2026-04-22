@@ -226,7 +226,10 @@ class Enemy {
             const centerY = this.y + this.height / 2;
 
             this.game.enemies.forEach(enemy => {
-                if (enemy === this || enemy.markedForDeletion) return;
+                // Empêche de se soigner soi-même, de soigner les ennemis déjà morts,
+                // ou de soigner d'autres Healers (pour éviter les boucles d'invincibilité)
+                if (enemy === this || enemy.markedForDeletion || enemy.type.key === 'HEALER') return;
+
                 const ex = enemy.x + enemy.width / 2;
                 const ey = enemy.y + enemy.height / 2;
                 if (Math.hypot(ex - centerX, ey - centerY) <= radius) {
