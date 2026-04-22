@@ -97,15 +97,21 @@ class Player {
     }
 
     draw(ctx) {
-        if (this.invulnTimer > 0 && Math.floor(this.invulnTimer / 4) % 2 === 0) {
-            ctx.globalAlpha = 0.5;
+        if (this.invulnTimer > 0) {
+            // Effet de clignotement blanc pendant l'invulnérabilité
+            if (Math.floor(this.invulnTimer / 4) % 2 === 0) {
+                ctx.fillStyle = '#fff';
+            } else {
+                ctx.fillStyle = this.color;
+            }
+        } else {
+            ctx.fillStyle = this.color;
         }
-        ctx.fillStyle = this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
         ctx.globalAlpha = 1;
 
         // Small barrel to show direction
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = this.invulnTimer > 0 && Math.floor(this.invulnTimer / 4) % 2 === 0 ? '#fff' : '#fff'; // Toujours blanc ou clignote?
         ctx.fillRect(this.x + this.width / 2 - 5, this.y - 10, 10, 20);
 
         // Draw Player HP
@@ -178,15 +184,19 @@ class Player {
         if (this.hasShield) {
             this.hasShield = false;
             this.shieldTimer = 0;
-            this.invulnTimer = Math.max(this.invulnTimer, 20);
+            this.invulnTimer = Math.max(this.invulnTimer, 30); // Petit délai après perte bouclier
             return false;
         }
 
         this.hp -= amount;
         this.game.stats.damageTaken += amount; // Suivi des dégâts reçus
         this.game.applyScreenShake(8, 20); // Tremblement lors des dégâts
-        if (this.invulnDurationFrames > 0) {
-            this.invulnTimer = this.invulnDurationFrames;
+        
+        // On donne toujours un minimum d'iframes (1s par défaut) pour éviter de mourir en 1 frame
+        this.invulnTimer = Math.max(this.invulnDurationFrames, 60);
+        
+        if (this.hp <= 0) {
+            this.game.setGameOver();
         }
         return true;
     }

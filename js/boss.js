@@ -250,10 +250,7 @@ class Boss {
         const playerRight = this.game.player.x + this.game.player.width;
 
         if (playerRight > laserLeft && playerLeft < laserRight) {
-            this.game.player.takeDamage(2);
-            if (this.game.player.hp <= 0) {
-                this.game.setGameOver();
-            }
+            this.game.player.takeDamage(2); // Dégâts importants
         }
     }
 
