@@ -63,6 +63,7 @@ class Enemy {
             height: 40,
             baseHp: [13, 24],
             speed: [1.1, 1.9],
+            shootInterval: [95, 140],
             scoreValue: 2
         },
         SPLITTER: {

@@ -61,6 +61,44 @@ canvas {
     font-size: 32px;
 }
 
+#game-over-menu {
+    background-color: rgba(0, 0, 0, 0.95);
+    animation: fadeInBg 3s ease-in-out forwards;
+}
+
+@keyframes fadeInBg {
+    0% { background-color: rgba(0, 0, 0, 0); }
+    30% { background-color: rgba(0, 0, 0, 0.4); } /* On garde une certaine visibilité au début pour le shake */
+    100% { background-color: rgba(0, 0, 0, 0.95); }
+}
+
+.died-title {
+    color: #ff3333 !important; /* Rouge vif style Dark Souls */
+    font-size: 72px !important;
+    letter-spacing: 15px;
+    margin-bottom: 50px !important;
+    text-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
+    font-weight: bold;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeInDied 2.5s ease-out forwards;
+}
+
+@keyframes fadeInDied {
+    0% { opacity: 0; transform: scale(1.2); filter: blur(10px); }
+    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+
+@keyframes fadeInButtons {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+#game-over-menu .menu-buttons {
+    opacity: 0;
+    animation: fadeInButtons 1s ease-out 3s forwards;
+}
+
 .overlay-menu p {
     margin-bottom: 25px;
     font-size: 18px;

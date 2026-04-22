@@ -222,9 +222,16 @@ window.addEventListener('load', () => {
     });
 
     window.addEventListener('gameOver', () => {
+        // Gros Screen Shake long pour l'impact
+        game.applyScreenShake(15, 120); 
+        
         hideAllMenus();
         gameOverMenu.classList.remove('hidden');
-        gameOverRestartBtn.focus();
+        
+        // On attend 3 secondes avant de permettre le contrôle au clavier (pendant le fondu des boutons)
+        setTimeout(() => {
+            gameOverMenuKeyboard.focusFirst();
+        }, 3000);
     });
 
     window.addEventListener('keydown', (e) => {
@@ -241,9 +248,7 @@ window.addEventListener('load', () => {
             }
         }
 
-        if (game.gameState === 'GAMEOVER' && e.code === 'KeyR') {
-            startNewRun(currentBossRush);
-        }
+        // Suppression de la touche R car on utilise désormais les boutons du menu
     });
 
     startBtn.addEventListener('click', () => startNewRun(false));
@@ -268,6 +273,11 @@ window.addEventListener('load', () => {
     const pauseMenuKeyboard = setupMenuKeyboardNavigation(
         [resumeBtn, restartBtn, pauseToMainBtn],
         () => !pauseMenu.classList.contains('hidden')
+    );
+
+    const gameOverMenuKeyboard = setupMenuKeyboardNavigation(
+        [gameOverRestartBtn, gameOverMainBtn],
+        () => !gameOverMenu.classList.contains('hidden')
     );
 
     window.addEventListener('resize', applyCanvasSize);
