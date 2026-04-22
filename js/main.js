@@ -16,8 +16,37 @@ window.addEventListener('load', () => {
     const gameOverRestartBtn = document.getElementById('gameover-restart-btn');
     const gameOverMainBtn = document.getElementById('gameover-main-btn');
 
+    const isMobileDevice = () => {
+        return window.matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
+    };
+
+    const computeCanvasSize = () => {
+        if (!isMobileDevice()) {
+            return { width: 600, height: 800 };
+        }
+
+        const viewport = window.visualViewport;
+        const width = Math.floor(viewport ? viewport.width : window.innerWidth);
+        const height = Math.floor(viewport ? viewport.height : window.innerHeight);
+        return { width, height };
+    };
+
+    const applyCanvasSize = () => {
+        const { width, height } = computeCanvasSize();
+        canvas.width = width;
+        canvas.height = height;
+
+        if (game) {
+            game.resize(width, height);
+        }
+    };
+
+    let game = null;
+
+    applyCanvasSize();
+
     // Create the game instance
-    const game = new Game(canvas.width, canvas.height, canvas);
+    game = new Game(canvas.width, canvas.height, canvas);
 
     const fps = 60;
     const interval = 1000 / fps;
@@ -240,6 +269,11 @@ window.addEventListener('load', () => {
         [resumeBtn, restartBtn, pauseToMainBtn],
         () => !pauseMenu.classList.contains('hidden')
     );
+
+    window.addEventListener('resize', applyCanvasSize);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', applyCanvasSize);
+    }
 
     showMainMenu();
 

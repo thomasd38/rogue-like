@@ -7,6 +7,17 @@ class Game {
         this.reset();
     }
 
+    resize(width, height) {
+        this.width = width;
+        this.height = height;
+
+        if (this.player) {
+            const maxX = Math.max(0, this.width - this.player.width);
+            this.player.x = Math.max(0, Math.min(this.player.x, maxX));
+            this.player.y = this.height - this.player.height - 20;
+        }
+    }
+
     reset(options = {}) {
         this.fastPlay = options.fastPlay ?? this.fastPlay ?? false;
         this.player = new Player(this);
