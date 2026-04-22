@@ -62,41 +62,86 @@ canvas {
 }
 
 #game-over-menu {
-    background-color: rgba(0, 0, 0, 0.95);
+    background-color: black;
     animation: fadeInBg 3s ease-in-out forwards;
+    justify-content: flex-start;
+    /* Changement pour permettre le positionnement relatif */
+    padding-top: 15vh;
 }
 
 @keyframes fadeInBg {
-    0% { background-color: rgba(0, 0, 0, 0); }
-    30% { background-color: rgba(0, 0, 0, 0.4); } /* On garde une certaine visibilité au début pour le shake */
-    100% { background-color: rgba(0, 0, 0, 0.95); }
+    0% {
+        background-color: rgba(0, 0, 0, 0);
+    }
+
+    30% {
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    100% {
+        background-color: black;
+    }
 }
 
 .died-title {
-    color: #ff3333 !important; /* Rouge vif style Dark Souls */
+    color: #ff3333 !important;
     font-size: 72px !important;
     letter-spacing: 15px;
-    margin-bottom: 50px !important;
     text-shadow: 0 0 30px rgba(255, 0, 0, 0.5);
     font-weight: bold;
     text-transform: uppercase;
     opacity: 0;
-    animation: fadeInDied 2.5s ease-out 1s forwards;
+    margin-bottom: 20px !important;
+
+    /* Animation complexe : apparition centre -> attente -> remonte */
+    transform: translateY(25vh) scale(1.1);
+    animation:
+        fadeInDied 2.5s ease-out 1s forwards,
+        moveDiedUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) 4s forwards;
 }
 
 @keyframes fadeInDied {
-    0% { opacity: 0; transform: scale(1.2); filter: blur(10px); }
-    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+    0% {
+        opacity: 0;
+        filter: blur(15px);
+    }
+
+    100% {
+        opacity: 1;
+        filter: blur(0);
+    }
 }
 
-@keyframes fadeInButtons {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
+@keyframes moveDiedUp {
+    0% {
+        transform: translateY(25vh) scale(1.1);
+    }
+
+    100% {
+        transform: translateY(0) scale(0.8);
+    }
+}
+
+@keyframes fadeInStats {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#game-over-stats {
+    opacity: 0;
+    animation: fadeInStats 1s ease-out 5s forwards;
 }
 
 #game-over-menu .menu-buttons {
     opacity: 0;
-    animation: fadeInButtons 1s ease-out 4s forwards;
+    animation: fadeInStats 1s ease-out 6.5s forwards;
 }
 
 .overlay-menu p {
@@ -177,7 +222,6 @@ canvas {
     width: 90%;
     max-width: 450px;
     opacity: 0;
-    animation: fadeInButtons 1s ease-out 4s forwards;
 }
 
 .stat-item {

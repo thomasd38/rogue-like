@@ -61,6 +61,8 @@ window.addEventListener('load', () => {
         upgradeMenu.classList.add('hidden');
     };
 
+    let gameOverLocked = false;
+
     const setupMenuKeyboardNavigation = (menuButtons, isMenuActive) => {
         let selectedIndex = 0;
 
@@ -71,6 +73,7 @@ window.addEventListener('load', () => {
 
         menuButtons.forEach((button, index) => {
             button.addEventListener('mouseenter', () => {
+                if (gameOverLocked && !gameOverMenu.classList.contains('hidden')) return;
                 selectedIndex = index;
                 focusCurrentButton();
             });
@@ -78,6 +81,7 @@ window.addEventListener('load', () => {
 
         const handleMenuKeydown = (e) => {
             if (!isMenuActive()) return;
+            if (gameOverLocked && !gameOverMenu.classList.contains('hidden')) return;
 
             if (['ArrowUp', 'KeyW', 'KeyZ'].includes(e.code)) {
                 e.preventDefault();
@@ -252,14 +256,16 @@ window.addEventListener('load', () => {
         // Gros Screen Shake long pour l'impact
         game.applyScreenShake(15, 120); 
         
+        gameOverLocked = true; // On bloque les interactions
         updateGameOverStats();
         hideAllMenus();
         gameOverMenu.classList.remove('hidden');
         
-        // On attend 4 secondes avant de permettre le contrôle au clavier (pendant le fondu des boutons)
+        // On attend 7.5 secondes avant de permettre le contrôle au clavier (quand les boutons sont totalement opaques)
         setTimeout(() => {
+            gameOverLocked = false;
             gameOverMenuKeyboard.focusFirst();
-        }, 4000);
+        }, 7500);
     });
 
     window.addEventListener('keydown', (e) => {
@@ -290,8 +296,14 @@ window.addEventListener('load', () => {
     restartBtn.addEventListener('click', () => startNewRun(currentBossRush));
     pauseToMainBtn.addEventListener('click', showMainMenu);
 
-    gameOverRestartBtn.addEventListener('click', () => startNewRun(currentBossRush));
-    gameOverMainBtn.addEventListener('click', showMainMenu);
+    gameOverRestartBtn.addEventListener('click', () => {
+        if (gameOverLocked) return;
+        startNewRun(currentBossRush);
+    });
+    gameOverMainBtn.addEventListener('click', () => {
+        if (gameOverLocked) return;
+        showMainMenu();
+    });
 
     const mainMenuKeyboard = setupMenuKeyboardNavigation(
         [startBtn, bossRushBtn],
