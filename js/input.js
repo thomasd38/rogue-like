@@ -6,7 +6,7 @@ class InputHandler {
         this.touchTargetX = null;
         this.touchTargetY = null;
         this.activePointerId = null;
-        this.touchYOffset = -60; // Décale la cible vers le haut pour voir le vaisseau au-dessus du doigt
+        this.touchYOffset = -40; // Décale légèrement vers le haut pour la visibilité
 
         window.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
