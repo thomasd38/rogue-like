@@ -63,7 +63,6 @@ class Enemy {
             height: 40,
             baseHp: [13, 24],
             speed: [1.1, 1.9],
-            shootInterval: [95, 140],
             scoreValue: 2
         },
         SPLITTER: {
@@ -108,6 +107,7 @@ class Enemy {
         this.markedForDeletion = false;
         this.slowMultiplier = 1;
         this.slowTimer = 0;
+        this.hitFlashTimer = 0;
         this.color = this.type.color;
 
         this.baseX = x;
@@ -135,6 +135,10 @@ class Enemy {
             if (this.slowTimer <= 0) {
                 this.slowMultiplier = 1;
             }
+        }
+
+        if (this.hitFlashTimer > 0) {
+            this.hitFlashTimer--;
         }
 
         this.patternTimer++;
@@ -167,6 +171,16 @@ class Enemy {
 
         if (this.y > this.game.height + 40) {
             this.markedForDeletion = true;
+        }
+    }
+
+    takeDamage(amount) {
+        this.hp -= amount;
+        this.hitFlashTimer = 5;
+        if (this.hp <= 0) {
+            this.markedForDeletion = true;
+            this.onDeath();
+            this.game.player.registerKill();
         }
     }
 
@@ -226,8 +240,6 @@ class Enemy {
             const centerY = this.y + this.height / 2;
 
             this.game.enemies.forEach(enemy => {
-                // Empêche de se soigner soi-même, de soigner les ennemis déjà morts,
-                // ou de soigner d'autres Healers (pour éviter les boucles d'invincibilité)
                 if (enemy === this || enemy.markedForDeletion || enemy.type.key === 'HEALER') return;
 
                 const ex = enemy.x + enemy.width / 2;
@@ -240,15 +252,15 @@ class Enemy {
     }
 
     draw(ctx) {
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = this.hitFlashTimer > 0 ? '#fff' : this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
 
         if (this.type.key === 'HEALER') {
-            ctx.strokeStyle = '#99ffcc';
+            ctx.strokeStyle = this.hitFlashTimer > 0 ? '#fff' : '#99ffcc';
             ctx.strokeRect(this.x + 4, this.y + 4, this.width - 8, this.height - 8);
         }
 
-        ctx.fillStyle = '#fff';
+        ctx.fillStyle = this.hitFlashTimer > 0 ? '#000' : '#fff';
         ctx.font = '14px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';

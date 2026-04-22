@@ -8,3 +8,8 @@ Ce document garde une trace de toutes les améliorations et corrections qui ont 
 - [x] **Renommage du mode "Fast Play" en "Boss Rush"** : Mise à jour de l'interface (HTML), du HUD (Canvas) et du code interne (JS) pour utiliser le nom "Boss Rush", plus parlant pour ce mode de test rapide.
 - [x] **Mouvement sur l'axe Y (Haut/Bas)** : Ajout du support des touches Z, W, S et des flèches pour le mouvement vertical. Le joueur peut désormais naviguer sur tout l'écran.
 - [x] **Correction du contrôle mobile (Suivi du point de contact)** : Refonte du système tactile. Le vaisseau se dirige désormais vers le point touché par le joueur à sa vitesse normale (pas de téléportation). Un décalage vertical (offset) a été ajouté pour que le vaisseau reste visible juste au-dessus du doigt du joueur, améliorant ainsi la visibilité et la précision.
+- [x] **Amélioration du Game Feel (VFX & Impact)** :
+    *   **Screen Shake** : Implémentation d'un système de tremblement d'écran lors des explosions et des dégâts subis par le joueur.
+    *   **Hit Flash** : Ajout d'un retour visuel immédiat (clignotement blanc) sur les ennemis et boss lorsqu'ils sont touchés.
+    *   **Visual Explosions** : Création d'effets visuels pour l'upgrade "Explosive Rounds", rendant les explosions enfin visibles à l'écran.
+    *   **Refactoring takeDamage** : Centralisation de la logique de dégâts pour faciliter les futurs effets.

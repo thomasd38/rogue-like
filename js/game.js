@@ -24,9 +24,14 @@ class Game {
         this.projectiles = [];
         this.enemyProjectiles = [];
         this.enemies = [];
+        this.vfx = []; // Effets visuels (explosions, etc.)
         this.enemyTimer = 0;
         this.baseEnemyInterval = 60;
         this.enemyInterval = this.baseEnemyInterval;
+
+        // Screen Shake
+        this.shakeTimer = 0;
+        this.shakeIntensity = 0;
 
         // Wave state
         this.gameState = 'MENU'; // MENU, PLAYING, PAUSED, UPGRADE, GAMEOVER, WAVE_CLEAR_DELAY
@@ -41,6 +46,11 @@ class Game {
         this.waveDuration = this.bossRush ? 3 * 60 : 30 * 60;
         this.waveTimeLeft = this.waveDuration;
         this.waveElapsedTime = 0;
+    }
+
+    applyScreenShake(intensity, duration) {
+        this.shakeIntensity = intensity;
+        this.shakeTimer = duration;
     }
 
     startGame(options = {}) {
@@ -86,11 +96,20 @@ class Game {
 
         if (this.gameState !== 'PLAYING') return;
 
+        // Update screen shake
+        if (this.shakeTimer > 0) {
+            this.shakeTimer--;
+        }
+
         this.player.update(this.input);
 
         // Update projectiles
         this.projectiles.forEach(p => p.update());
         this.enemyProjectiles.forEach(p => p.update());
+
+        // Update VFX
+        this.vfx.forEach(v => v.update());
+        this.vfx = this.vfx.filter(v => !v.markedForDeletion);
 
         if (this.isBossWave) {
             this.boss.update();
@@ -150,8 +169,17 @@ class Game {
     }
 
     draw(ctx) {
+        ctx.save();
+        
+        // Apply screen shake
+        if (this.shakeTimer > 0) {
+            const dx = (Math.random() - 0.5) * this.shakeIntensity;
+            const dy = (Math.random() - 0.5) * this.shakeIntensity;
+            ctx.translate(dx, dy);
+        }
+
         // Clear canvas
-        ctx.clearRect(0, 0, this.width, this.height);
+        ctx.clearRect(-100, -100, this.width + 200, this.height + 200);
 
         // Draw wave text if playing
         if (this.gameState === 'PLAYING' || this.gameState === 'PAUSED' || this.gameState === 'UPGRADE') {
@@ -184,6 +212,9 @@ class Game {
         this.enemyProjectiles.forEach(p => p.draw(ctx));
         this.enemies.forEach(e => e.draw(ctx));
         if (this.boss) this.boss.draw(ctx);
+        this.vfx.forEach(v => v.draw(ctx));
+
+        ctx.restore();
     }
 
     spawnEnemy() {
@@ -233,7 +264,7 @@ class Game {
                 let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
                 if (distanceSquared < (projectile.radius * projectile.radius)) {
                     projectile.hitBoss = true;
-                    this.boss.hp -= projectile.damage;
+                    this.boss.takeDamage(projectile.damage);
                     this.handleProjectileAfterHit(projectile);
                     if (projectile.explosiveRadius > 0) {
                         this.triggerExplosion(projectile.x, projectile.y, projectile.explosiveRadius, projectile.damage, true);
@@ -266,7 +297,7 @@ class Game {
                 let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
                 if (distanceSquared < (projectile.radius * projectile.radius)) {
                     projectile.hitEnemies.add(enemy);
-                    enemy.hp -= projectile.damage;
+                    enemy.takeDamage(projectile.damage);
                     if (projectile.slowAmount > 0) {
                         enemy.applySlow(projectile.slowAmount, projectile.slowDuration);
                     }
@@ -274,11 +305,6 @@ class Game {
                         this.triggerExplosion(projectile.x, projectile.y, projectile.explosiveRadius, projectile.damage, false, enemy);
                     }
                     this.handleProjectileAfterHit(projectile);
-                    if (enemy.hp <= 0) {
-                        enemy.markedForDeletion = true;
-                        enemy.onDeath();
-                        this.player.registerKill();
-                    }
                 }
             });
         });
@@ -346,6 +372,12 @@ class Game {
     }
 
     triggerExplosion(x, y, radius, sourceDamage, includeBoss = false, ignoreEnemy = null) {
+        // Effet visuel
+        this.vfx.push(new ExplosionEffect(this, x, y, radius));
+        
+        // Screen Shake
+        this.applyScreenShake(radius / 10, 15);
+
         this.enemies.forEach(enemy => {
             if (ignoreEnemy && enemy === ignoreEnemy) return;
             const enemyCenterX = enemy.x + enemy.width / 2;
@@ -354,12 +386,7 @@ class Game {
             if (distance <= radius) {
                 const ratio = Math.max(0, 1 - distance / radius);
                 const damage = Math.max(1, Math.round(sourceDamage * (0.4 + ratio * 0.6)));
-                enemy.hp -= damage;
-                if (enemy.hp <= 0) {
-                    enemy.markedForDeletion = true;
-                    enemy.onDeath();
-                    this.player.registerKill();
-                }
+                enemy.takeDamage(damage);
             }
         });
 
@@ -370,7 +397,7 @@ class Game {
             if (distance <= radius) {
                 const ratio = Math.max(0, 1 - distance / radius);
                 const damage = Math.max(1, Math.round(sourceDamage * (0.35 + ratio * 0.45)));
-                this.boss.hp -= damage;
+                this.boss.takeDamage(damage);
             }
         }
     }
@@ -390,5 +417,41 @@ class Game {
         }
 
         this.gameState = 'PLAYING';
+    }
+}
+
+class ExplosionEffect {
+    constructor(game, x, y, maxRadius) {
+        this.game = game;
+        this.x = x;
+        this.y = y;
+        this.maxRadius = maxRadius;
+        this.radius = 0;
+        this.life = 1.0;
+        this.decay = 0.05; // Dure environ 20 frames
+        this.markedForDeletion = false;
+    }
+
+    update() {
+        this.life -= this.decay;
+        this.radius = this.maxRadius * (1 - this.life);
+        if (this.life <= 0) {
+            this.markedForDeletion = true;
+        }
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255, 100, 0, ${this.life})`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius * 0.7, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 200, 50, ${this.life * 0.5})`;
+        ctx.fill();
+        ctx.restore();
     }
 }

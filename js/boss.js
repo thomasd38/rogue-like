@@ -70,6 +70,7 @@ class Boss {
 
         this.maxHp = this.type.hpBase + (wave * this.type.hpScale);
         this.hp = this.maxHp;
+        this.hitFlashTimer = 0;
         this.color = this.type.color;
 
         this.speedX = this.type.moveSpeed;
@@ -94,6 +95,7 @@ class Boss {
 
     update() {
         this.handleMovement();
+        if (this.hitFlashTimer > 0) this.hitFlashTimer--;
 
         if (this.type.laser) {
             this.handleLaser();
@@ -166,7 +168,7 @@ class Boss {
     }
 
     draw(ctx) {
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = this.hitFlashTimer > 0 ? '#fff' : this.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
 
         const hpPercentage = this.hp / this.maxHp;
@@ -192,6 +194,11 @@ class Boss {
                 ctx.fillRect(this.x + this.width / 2 - beamWidth / 2, this.y + this.height, beamWidth, this.game.height);
             }
         }
+    }
+
+    takeDamage(amount) {
+        this.hp -= amount;
+        this.hitFlashTimer = 5;
     }
 
     shootProjectile() {

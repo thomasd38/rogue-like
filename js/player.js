@@ -180,6 +180,7 @@ class Player {
         }
 
         this.hp -= amount;
+        this.game.applyScreenShake(8, 20); // Tremblement lors des dégâts
         if (this.invulnDurationFrames > 0) {
             this.invulnTimer = this.invulnDurationFrames;
         }

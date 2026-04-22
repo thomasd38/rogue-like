@@ -13,9 +13,9 @@ Ce document liste les améliorations proposées suite à la relecture du code in
 - [ ] **Upgrades Uniques trop rares** : Les upgrades méta comme `wave_economy` (Reroll) et `mad_buyer` (+1 Choix) ne s'obtiennent qu'après avoir battu un boss. Les passer dans le pool classique (rareté Épique/Légendaire) les rendrait plus accessibles.
 
 ## ✨ 3. Game Feel (Retours visuels)
-- [ ] **Explosions invisibles** : L'upgrade *Explosive Rounds* n'affiche rien à l'écran. Ajouter un effet visuel (cercle coloré) lors du `triggerExplosion`.
-- [ ] **Hit Flash** : Ajouter un flash blanc (changement de couleur sur quelques frames) quand un ennemi ou le boss prend des dégâts.
-- [ ] **Screen Shake (Tremblement d'écran)** : Faire trembler le canvas lors d'une perte de HP du joueur ou lors de grosses explosions pour plus d'impact.
+- [x] **Explosions invisibles** : Ajout d'un effet visuel (cercles concentriques orange/jaune) lors du déclenchement d'une explosion.
+- [x] **Hit Flash** : Les ennemis et les boss clignotent désormais en blanc pendant quelques frames lorsqu'ils reçoivent des dégâts.
+- [x] **Screen Shake (Tremblement d'écran)** : Le canvas tremble désormais lors d'une explosion ou lorsque le joueur perd des HP.
 
 ## ⚙️ 4. Optimisation et Maintenabilité
 - [ ] **Garbage Collection et Ralentissements** : `game.js` filtre le tableau des projectiles (`this.projectiles.filter`) à chaque frame, créant de nouveaux arrays et pouvant causer des micro-saccades. Utiliser une itération inversée avec `.splice()` ou recycler les objets (object pooling).
