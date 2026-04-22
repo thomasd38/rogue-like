@@ -1,8 +1,8 @@
 class Game {
-    constructor(canvasWidth, canvasHeight) {
+    constructor(canvasWidth, canvasHeight, canvasElement = null) {
         this.width = canvasWidth;
         this.height = canvasHeight;
-        this.input = new InputHandler();
+        this.input = new InputHandler(canvasElement);
         this.fastPlay = false;
         this.reset();
     }

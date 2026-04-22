@@ -24,6 +24,7 @@ body {
 canvas {
     display: block;
     background-color: #000;
+    touch-action: none;
 }
 
 /* UI Overlay */

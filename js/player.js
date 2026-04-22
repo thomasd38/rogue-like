@@ -44,11 +44,15 @@ class Player {
 
     update(input) {
         // Movement
-        if (input.isLeft()) {
-            this.x -= this.speed;
-        }
-        if (input.isRight()) {
-            this.x += this.speed;
+        if (input.hasTouchControl()) {
+            this.x = input.getTouchTargetX() - this.width / 2;
+        } else {
+            if (input.isLeft()) {
+                this.x -= this.speed;
+            }
+            if (input.isRight()) {
+                this.x += this.speed;
+            }
         }
 
         // Boundaries

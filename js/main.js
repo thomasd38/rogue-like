@@ -17,7 +17,7 @@ window.addEventListener('load', () => {
     const gameOverMainBtn = document.getElementById('gameover-main-btn');
 
     // Create the game instance
-    const game = new Game(canvas.width, canvas.height);
+    const game = new Game(canvas.width, canvas.height, canvas);
 
     const fps = 60;
     const interval = 1000 / fps;
