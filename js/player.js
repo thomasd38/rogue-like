@@ -137,6 +137,9 @@ class Player {
             const isCrit = Math.random() < this.critChance;
             const finalDamage = Math.round(this.projectileDamage * damageMultiplier * (isCrit ? this.critMultiplier : 1));
 
+            this.game.stats.projectilesFired++; // Suivi des tirs
+            if (isCrit || isChargedShot) this.game.stats.criticalHits++; // Suivi des coups critiques
+
             return new Projectile(
                 this.game,
                 centerX,
@@ -180,6 +183,7 @@ class Player {
         }
 
         this.hp -= amount;
+        this.game.stats.damageTaken += amount; // Suivi des dégâts reçus
         this.game.applyScreenShake(8, 20); // Tremblement lors des dégâts
         if (this.invulnDurationFrames > 0) {
             this.invulnTimer = this.invulnDurationFrames;

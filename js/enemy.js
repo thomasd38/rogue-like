@@ -177,9 +177,11 @@ class Enemy {
 
     takeDamage(amount) {
         this.hp -= amount;
+        this.game.stats.damageDealt += amount; // Suivi des dégâts
         this.hitFlashTimer = 5;
         if (this.hp <= 0) {
             this.markedForDeletion = true;
+            this.game.stats.enemiesKilled++; // Suivi des kills
             this.onDeath();
             this.game.player.registerKill();
         }

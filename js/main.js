@@ -103,6 +103,32 @@ window.addEventListener('load', () => {
         };
     };
 
+    const updateGameOverStats = () => {
+        const statsContainer = document.getElementById('game-over-stats');
+        const s = game.stats;
+        
+        // Calcul du temps (MM:SS)
+        const totalSeconds = Math.floor(s.timePlayed / 60);
+        const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        const secs = (totalSeconds % 60).toString().padStart(2, '0');
+        const timeStr = `${mins}:${secs}`;
+
+        const accuracy = s.projectilesFired > 0 ? Math.round((s.projectilesHit / s.projectilesFired) * 100) : 0;
+
+        statsContainer.innerHTML = `
+            <div class="stat-item"><span>Time:</span> <strong>${timeStr}</strong></div>
+            <div class="stat-item"><span>Waves:</span> <strong>${s.wavesCleared}</strong></div>
+            <div class="stat-item"><span>Kills:</span> <strong>${s.enemiesKilled}</strong></div>
+            <div class="stat-item"><span>Bosses:</span> <strong>${s.bossesDefeated}</strong></div>
+            <div class="stat-item"><span>Damage Dealt:</span> <strong>${s.damageDealt.toLocaleString()}</strong></div>
+            <div class="stat-item"><span>Damage Taken:</span> <strong>${s.damageTaken}</strong></div>
+            <div class="stat-item"><span>Shots Fired:</span> <strong>${s.projectilesFired}</strong></div>
+            <div class="stat-item"><span>Accuracy:</span> <strong>${accuracy}%</strong></div>
+            <div class="stat-item"><span>Crits:</span> <strong>${s.criticalHits}</strong></div>
+            <div class="stat-item"><span>Upgrades:</span> <strong>${s.upgradesPicked}</strong></div>
+        `;
+    };
+
     const startNewRun = (bossRushMode) => {
         currentBossRush = bossRushMode;
         hideAllMenus();
@@ -199,6 +225,7 @@ window.addEventListener('load', () => {
                 btn.style.setProperty('--rarity-color', upgrade.rarity.color);
                 btn.innerHTML = `<strong>${upgrade.name}</strong>${upgrade.description}`;
                 btn.onclick = () => {
+                    game.stats.upgradesPicked++; // Suivi des upgrades
                     upgrade.apply(game.player);
                     closeMenu();
                 };
@@ -225,13 +252,14 @@ window.addEventListener('load', () => {
         // Gros Screen Shake long pour l'impact
         game.applyScreenShake(15, 120); 
         
+        updateGameOverStats();
         hideAllMenus();
         gameOverMenu.classList.remove('hidden');
         
-        // On attend 3 secondes avant de permettre le contrôle au clavier (pendant le fondu des boutons)
+        // On attend 4 secondes avant de permettre le contrôle au clavier (pendant le fondu des boutons)
         setTimeout(() => {
             gameOverMenuKeyboard.focusFirst();
-        }, 3000);
+        }, 4000);
     });
 
     window.addEventListener('keydown', (e) => {

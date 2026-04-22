@@ -42,6 +42,20 @@ class Game {
         this.waveClearTimer = 0;
         this.waveClearPayload = null;
 
+        // Stats tracking
+        this.stats = {
+            damageDealt: 0,
+            damageTaken: 0,
+            enemiesKilled: 0,
+            bossesDefeated: 0,
+            wavesCleared: 0,
+            projectilesFired: 0,
+            projectilesHit: 0,
+            timePlayed: 0, // en frames
+            upgradesPicked: 0,
+            criticalHits: 0
+        };
+
         // Time based wave
         this.waveDuration = this.bossRush ? 3 * 60 : 30 * 60;
         this.waveTimeLeft = this.waveDuration;
@@ -96,6 +110,9 @@ class Game {
 
         if (this.gameState !== 'PLAYING') return;
 
+        // Update stats
+        this.stats.timePlayed++;
+
         // Update screen shake
         if (this.shakeTimer > 0) {
             this.shakeTimer--;
@@ -123,6 +140,7 @@ class Game {
             if (this.boss.hp <= 0) {
                 this.boss = null;
                 this.enemyProjectiles = [];
+                this.stats.bossesDefeated++; // Boss vaincu !
                 this.beginWaveClearSequence({
                     wasBossWave: true,
                     shouldOpenRewardMenu: true
@@ -264,6 +282,7 @@ class Game {
                 let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
                 if (distanceSquared < (projectile.radius * projectile.radius)) {
                     projectile.hitBoss = true;
+                    this.stats.projectilesHit++; // Hit boss
                     this.boss.takeDamage(projectile.damage);
                     this.handleProjectileAfterHit(projectile);
                     if (projectile.explosiveRadius > 0) {
@@ -297,6 +316,7 @@ class Game {
                 let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
                 if (distanceSquared < (projectile.radius * projectile.radius)) {
                     projectile.hitEnemies.add(enemy);
+                    this.stats.projectilesHit++; // Hit enemy
                     enemy.takeDamage(projectile.damage);
                     if (projectile.slowAmount > 0) {
                         enemy.applySlow(projectile.slowAmount, projectile.slowDuration);
@@ -403,6 +423,7 @@ class Game {
     }
 
     startNextWave() {
+        this.stats.wavesCleared++; // Vague terminée !
         this.wave++;
         this.isBossWave = (this.wave % 5 === 0);
 

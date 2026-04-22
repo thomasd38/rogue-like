@@ -198,6 +198,7 @@ class Boss {
 
     takeDamage(amount) {
         this.hp -= amount;
+        this.game.stats.damageDealt += amount; // Suivi des dégâts
         this.hitFlashTimer = 5;
     }
 
