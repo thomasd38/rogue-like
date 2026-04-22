@@ -43,18 +43,29 @@ class Player {
     }
 
     update(input) {
-        // Movement (Uniforme pour clavier et mobile)
-        if (input.isLeft()) {
-            this.x -= this.speed;
-        }
-        if (input.isRight()) {
-            this.x += this.speed;
-        }
-        if (input.isUp()) {
-            this.y -= this.speed;
-        }
-        if (input.isDownDir()) {
-            this.y += this.speed;
+        // Movement
+        if (input.touchActive && input.touchTargetX !== null && input.touchTargetY !== null) {
+            // Sur mobile, le vaisseau se dirige vers le point touché (l'offset est géré par l'InputHandler)
+            const targetX = input.touchTargetX - this.width / 2;
+            const targetY = input.touchTargetY - this.height / 2;
+
+            const dx = targetX - this.x;
+            const dy = targetY - this.y;
+            const dist = Math.hypot(dx, dy);
+
+            if (dist > this.speed) {
+                this.x += (dx / dist) * this.speed;
+                this.y += (dy / dist) * this.speed;
+            } else {
+                this.x = targetX;
+                this.y = targetY;
+            }
+        } else {
+            // Clavier
+            if (input.isLeft()) this.x -= this.speed;
+            if (input.isRight()) this.x += this.speed;
+            if (input.isUp()) this.y -= this.speed;
+            if (input.isDownDir()) this.y += this.speed;
         }
 
         // Boundaries
