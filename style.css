@@ -4,15 +4,22 @@
     box-sizing: border-box;
 }
 
+html,
+body {
+    width: 100%;
+    height: 100%;
+}
+
 body {
     background-color: #111;
     color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     font-family: 'Courier New', Courier, monospace;
     overflow: hidden;
+    overscroll-behavior: none;
 }
 
 #game-container {
@@ -120,4 +127,16 @@ canvas {
     font-size: 18px;
     text-transform: uppercase;
     letter-spacing: 1px;
+}
+
+@media (pointer: coarse) {
+    body {
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
+
+    #game-container {
+        border: none;
+        box-shadow: none;
+    }
 }
