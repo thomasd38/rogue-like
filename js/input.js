@@ -10,6 +10,7 @@ class InputHandler {
 
         window.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
+            this.touchActive = false; // Le clavier prend la priorité
         });
 
         window.addEventListener('keyup', (e) => {
@@ -23,17 +24,34 @@ class InputHandler {
 
     setupTouchControls() {
         if (window.PointerEvent) {
+            // Pour la souris : suivi simple sans clic (sur le canvas uniquement)
+            this.canvas.addEventListener('pointermove', (e) => {
+                if (e.pointerType === 'mouse') {
+                    this.updateTouchTarget(e.clientX, e.clientY, 'mouse');
+                }
+            });
+
+            this.canvas.addEventListener('pointerleave', (e) => {
+                if (e.pointerType === 'mouse') {
+                    this.clearTouch();
+                }
+            });
+
+            // Pour le tactile/stylet : on commence sur pointerdown (cliquer-glisser)
             this.canvas.addEventListener('pointerdown', (e) => {
+                if (e.pointerType === 'mouse') return;
                 if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
                 this.activePointerId = e.pointerId;
-                this.updateTouchTarget(e.clientX, e.clientY);
+                this.updateTouchTarget(e.clientX, e.clientY, e.pointerType);
                 e.preventDefault();
             }, { passive: false });
 
+            // Suivi du déplacement pour le tactile (sur window pour permettre de sortir du canvas)
             window.addEventListener('pointermove', (e) => {
-                if (this.activePointerId === null || e.pointerId !== this.activePointerId) return;
-                this.updateTouchTarget(e.clientX, e.clientY);
-                e.preventDefault();
+                if (e.pointerType !== 'mouse' && this.activePointerId !== null && e.pointerId === this.activePointerId) {
+                    this.updateTouchTarget(e.clientX, e.clientY, e.pointerType);
+                    e.preventDefault();
+                }
             }, { passive: false });
 
             const stopPointerControl = (e) => {
@@ -65,14 +83,17 @@ class InputHandler {
         }
     }
 
-    updateTouchTarget(clientX, clientY) {
+    updateTouchTarget(clientX, clientY, pointerType = 'touch') {
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;
         const scaleY = this.canvas.height / rect.height;
         
         this.touchActive = true;
         this.touchTargetX = (clientX - rect.left) * scaleX;
-        this.touchTargetY = (clientY - rect.top) * scaleY + this.touchYOffset;
+        
+        // Pas d'offset pour la souris pour la précision, offset pour le tactile pour la visibilité
+        const offset = (pointerType === 'mouse') ? 0 : this.touchYOffset;
+        this.touchTargetY = (clientY - rect.top) * scaleY + offset;
     }
 
     clearTouch() {

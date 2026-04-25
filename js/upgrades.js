@@ -1,9 +1,9 @@
 const RARITIES = [
-    { id: 'common', name: 'Common', color: '#ffffff', weight: 50 },
-    { id: 'uncommon', name: 'Uncommon', color: '#2ecc71', weight: 30 },
-    { id: 'rare', name: 'Rare', color: '#3498db', weight: 12 },
-    { id: 'epic', name: 'Epic', color: '#9b59b6', weight: 6 },
-    { id: 'legendary', name: 'Legendary', color: '#e67e22', weight: 2 }
+    { id: 'common', name: 'Common', color: '#ffffff', weight: 64 },
+    { id: 'uncommon', name: 'Uncommon', color: '#2ecc71', weight: 20 },
+    { id: 'rare', name: 'Rare', color: '#3498db', weight: 10 },
+    { id: 'epic', name: 'Epic', color: '#9b59b6', weight: 5 },
+    { id: 'legendary', name: 'Legendary', color: '#e67e22', weight: 1 }
 ];
 
 const RARITY_ORDER = RARITIES.map(r => r.id);
