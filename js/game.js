@@ -4,6 +4,7 @@ class Game {
         this.height = canvasHeight;
         this.input = new InputHandler(canvasElement);
         this.bossRush = false;
+        this.background = new Background(this);
         this.reset();
     }
 
@@ -87,6 +88,10 @@ class Game {
     }
 
     update() {
+        if (this.gameState !== 'PAUSED') {
+            this.background.update();
+        }
+
         if (this.gameState === 'WAVE_CLEAR_DELAY') {
             this.waveClearTimer--;
             if (this.waveClearTimer <= 0 && this.waveClearPayload) {
@@ -196,25 +201,25 @@ class Game {
             ctx.translate(dx, dy);
         }
 
-        // Clear canvas
-        ctx.clearRect(-100, -100, this.width + 200, this.height + 200);
+        // Clear canvas and draw background
+        this.background.draw(ctx);
 
         // Draw wave text if playing
         if (this.gameState === 'PLAYING' || this.gameState === 'PAUSED' || this.gameState === 'UPGRADE') {
             ctx.fillStyle = '#fff';
-            ctx.font = '20px monospace';
+            ctx.font = `20px ${window.GAME_FONT}`;
             ctx.textAlign = 'right';
             ctx.textBaseline = 'top';
             ctx.fillText(`Wave: ${this.wave}`, this.width - 10, 10);
 
             if (this.isBossWave) {
                 ctx.fillStyle = '#f0f';
-                ctx.font = '16px monospace';
+                ctx.font = `16px ${window.GAME_FONT}`;
                 const bossName = this.boss ? this.boss.type.label : 'BOSS';
                 ctx.fillText(`BOSS: ${bossName}`, this.width - 10, 35);
             } else {
                 ctx.fillStyle = '#fff';
-                ctx.font = '14px monospace';
+                ctx.font = `14px ${window.GAME_FONT}`;
                 const secondsLeft = Math.ceil(this.waveTimeLeft / 60);
                 ctx.fillText(`Time Left: ${secondsLeft}s`, this.width - 10, 35);
             }

@@ -177,8 +177,8 @@ class Boss {
         ctx.fillStyle = '#f00';
         ctx.fillRect(this.x, this.y - 18, this.width * hpPercentage, 10);
 
-        ctx.fillStyle = '#fff';
-        ctx.font = '15px monospace';
+        ctx.fillStyle = this.hitFlashTimer > 0 ? '#000' : '#fff';
+        ctx.font = `15px ${window.GAME_FONT}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(this.type.label, this.x + this.width / 2, this.y + 24);

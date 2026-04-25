@@ -264,7 +264,7 @@ class Enemy {
         }
 
         ctx.fillStyle = this.hitFlashTimer > 0 ? '#000' : '#fff';
-        ctx.font = '14px monospace';
+        ctx.font = `14px ${window.GAME_FONT}`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(this.hp, this.x + this.width / 2, this.y + this.height / 2);

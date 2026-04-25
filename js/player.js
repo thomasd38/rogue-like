@@ -7,13 +7,13 @@ class Player {
         this.y = this.game.height - this.height - 30;
         this.speed = 5;
         this.color = '#0af'; // Cannon color fallback
-        
+
         // Image loading
         this.image = new Image();
         this.image.src = 'img/player.png';
-        
+
         // Debug
-        this.debug = true; // Set to true to see hitboxes
+        this.debug = false; // Set to true to see hitboxes
 
         // Stats
         this.fireRate = 75; // Frames between shots (lower is faster)
@@ -130,7 +130,7 @@ class Player {
             ctx.fillStyle = this.color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
-        
+
         ctx.globalAlpha = 1;
 
         // Visual Hitbox for testing
@@ -141,7 +141,7 @@ class Player {
             hitboxes.forEach(hb => {
                 ctx.strokeRect(hb.x, hb.y, hb.width, hb.height);
             });
-            
+
             // Central point
             ctx.fillStyle = 'red';
             ctx.fillRect(this.x + this.width / 2 - 2, this.y + this.height / 2 - 2, 4, 4);
@@ -149,7 +149,7 @@ class Player {
 
         // Draw Player HP
         ctx.fillStyle = '#0f0';
-        ctx.font = '20px monospace';
+        ctx.font = `20px ${window.GAME_FONT}`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         ctx.fillText(`HP: ${this.hp}/${this.maxHp}`, 10, 10);
@@ -224,10 +224,10 @@ class Player {
         this.hp -= amount;
         this.game.stats.damageTaken += amount; // Suivi des dégâts reçus
         this.game.applyScreenShake(8, 20); // Tremblement lors des dégâts
-        
+
         // On donne toujours un minimum d'iframes (1s par défaut) pour éviter de mourir en 1 frame
         this.invulnTimer = Math.max(this.invulnDurationFrames, 60);
-        
+
         if (this.hp <= 0) {
             this.game.setGameOver();
         }
