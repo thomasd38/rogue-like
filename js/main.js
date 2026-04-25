@@ -33,21 +33,21 @@ window.addEventListener('load', () => {
 
     const applyCanvasSize = () => {
         const { width, height } = computeCanvasSize();
-        
+
         // Gestion des écrans haute résolution (Retina, téléphones)
         const dpr = window.devicePixelRatio || 1;
-        
+
         // Taille CSS (pixels logiques)
         canvas.style.width = width + 'px';
         canvas.style.height = height + 'px';
-        
+
         // Taille de rendu (pixels physiques)
         canvas.width = width * dpr;
         canvas.height = height * dpr;
-        
+
         // On met à l'échelle pour pouvoir dessiner en utilisant les coordonnées logiques
         ctx.scale(dpr, dpr);
-        
+
         // L'image du joueur est en très haute résolution (1065x860) et on la réduit beaucoup.
         // Il FAUT donc que le lissage soit activé, sinon le navigateur utilise un algorithme
         // "Nearest Neighbor" brutal qui détruit les détails de l'image au lieu de les lisser.
@@ -127,7 +127,7 @@ window.addEventListener('load', () => {
     const updateGameOverStats = () => {
         const statsContainer = document.getElementById('game-over-stats');
         const s = game.stats;
-        
+
         // Calcul du temps (MM:SS)
         const totalSeconds = Math.floor(s.timePlayed / 60);
         const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
@@ -196,7 +196,8 @@ window.addEventListener('load', () => {
 
         const upgradeOptions = document.getElementById('upgrade-options');
         const optionCount = 3 + game.player.upgradeChoicesBonus;
-        let rerollsLeft = game.player.upgradeRerolls;
+        const initialRerolls = game.player.upgradeRerolls;
+        let rerollsLeft = initialRerolls;
 
         const buttons = [];
         let selectedIndex = 0;
@@ -223,7 +224,10 @@ window.addEventListener('load', () => {
         const closeMenu = () => {
             upgradeMenu.classList.add('hidden');
             window.removeEventListener('keydown', handleMenuKeydown);
-            game.player.upgradeRerolls = rerollsLeft;
+
+            const rerollsUsed = initialRerolls - rerollsLeft;
+            game.player.upgradeRerolls -= rerollsUsed;
+
             window.focus();
             game.startNextWave();
         };
@@ -278,13 +282,13 @@ window.addEventListener('load', () => {
 
     window.addEventListener('gameOver', () => {
         // Gros Screen Shake long pour l'impact
-        game.applyScreenShake(15, 120); 
-        
+        game.applyScreenShake(15, 120);
+
         gameOverLocked = true; // On bloque les interactions
         updateGameOverStats();
         hideAllMenus();
         gameOverMenu.classList.remove('hidden');
-        
+
         // On attend 7.5 secondes avant de permettre le contrôle au clavier (quand les boutons sont totalement opaques)
         setTimeout(() => {
             gameOverLocked = false;

@@ -23,8 +23,8 @@ const UPGRADE_TYPES = [
             { rarity: 'common', value: 5 },
             { rarity: 'uncommon', value: 8 },
             { rarity: 'rare', value: 12 },
-            { rarity: 'epic', value: 20 },
-            { rarity: 'legendary', value: 35 }
+            { rarity: 'epic', value: 18 },
+            { rarity: 'legendary', value: 25 }
         ],
         getDescription: (val) => `Projectile Damage +${val}`,
         apply: (player, val) => { player.projectileDamage += val; }
@@ -50,9 +50,7 @@ const UPGRADE_TYPES = [
         name: 'Multi-Shot',
         rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
-            { rarity: 'common', value: 1 },
-            { rarity: 'uncommon', value: 1 },
-            { rarity: 'rare', value: 2 },
+            { rarity: 'rare', value: 1 },
             { rarity: 'epic', value: 2 },
             { rarity: 'legendary', value: 3 }
         ],
@@ -64,22 +62,14 @@ const UPGRADE_TYPES = [
         name: 'Vitality',
         rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
-            { rarity: 'common', value: 1 },
-            { rarity: 'uncommon', value: 1 },
-            { rarity: 'rare', value: 2 },
+            { rarity: 'rare', value: 1 },
             { rarity: 'epic', value: 2 },
             { rarity: 'legendary', value: 3 }
         ],
-        getDescription: (val) => `Restore or Gain +${val} Max HP`,
+        getDescription: (val) => `Gain +${val} Max HP`,
         apply: (player, val) => {
-            for (let i = 0; i < val; i++) {
-                if (player.hp < player.maxHp) {
-                    player.hp += 1;
-                } else {
-                    player.maxHp += 1;
-                    player.hp += 1;
-                }
-            }
+            player.maxHp += val;
+            player.hp += val;
         }
     },
     {
@@ -87,13 +77,13 @@ const UPGRADE_TYPES = [
         name: 'Speed',
         rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
-            { rarity: 'common', value: 1 },
-            { rarity: 'uncommon', value: 1.5 },
-            { rarity: 'rare', value: 2 },
-            { rarity: 'epic', value: 3 },
-            { rarity: 'legendary', value: 5 }
+            { rarity: 'common', value: 0.2 },
+            { rarity: 'uncommon', value: 0.4 },
+            { rarity: 'rare', value: 0.8 },
+            { rarity: 'epic', value: 1.3 },
+            { rarity: 'legendary', value: 2 }
         ],
-        getDescription: (val) => `Movement Speed +${val}`,
+        getDescription: (val) => `Movement Speed +${Math.round((val / 2) * 100)}%`,
         apply: (player, val) => { player.speed += val; }
     },
     {
@@ -140,8 +130,11 @@ const UPGRADE_TYPES = [
         name: 'Charged Shot',
         rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [
-            { rarity: 'epic', value: 8 },
-            { rarity: 'legendary', value: 6 }
+            { rarity: 'common', value: 20 },
+            { rarity: 'uncommon', value: 13 },
+            { rarity: 'rare', value: 8 },
+            { rarity: 'epic', value: 4 },
+            { rarity: 'legendary', value: 2 }
         ],
         getDescription: (val) => `Every ${val}s: massive charged projectile`,
         apply: (player, val) => {
@@ -154,6 +147,8 @@ const UPGRADE_TYPES = [
         name: 'Cyclic Shield',
         rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [
+            { rarity: 'common', value: 50 },
+            { rarity: 'uncommon', value: 35 },
             { rarity: 'rare', value: 25 },
             { rarity: 'epic', value: 18 },
             { rarity: 'legendary', value: 12 }
@@ -166,8 +161,8 @@ const UPGRADE_TYPES = [
         }
     },
     {
-        id: 'light_vampirism',
-        name: 'Light Vampirism',
+        id: 'vampirism',
+        name: 'Vampirism',
         rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
         tiers: [
             { rarity: 'rare', value: 14 },
@@ -178,18 +173,6 @@ const UPGRADE_TYPES = [
             player.lifeStealKillsRequired = val;
             player.lifeStealCounter = 0;
         }
-    },
-    {
-        id: 'iframes',
-        name: 'i-frames',
-        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
-        tiers: [
-            { rarity: 'uncommon', value: 30 },
-            { rarity: 'rare', value: 45 },
-            { rarity: 'epic', value: 60 }
-        ],
-        getDescription: (val) => `Invulnerable ${Math.round((val / 60) * 10) / 10}s after hit`,
-        apply: (player, val) => { player.invulnDurationFrames = Math.max(player.invulnDurationFrames, val); }
     },
     {
         id: 'slow_on_hit',
