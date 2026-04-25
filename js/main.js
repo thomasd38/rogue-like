@@ -33,8 +33,23 @@ window.addEventListener('load', () => {
 
     const applyCanvasSize = () => {
         const { width, height } = computeCanvasSize();
-        canvas.width = width;
-        canvas.height = height;
+        
+        // Gestion des écrans haute résolution (Retina, téléphones)
+        const dpr = window.devicePixelRatio || 1;
+        
+        // Taille CSS (pixels logiques)
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        
+        // Taille de rendu (pixels physiques)
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        
+        // On met à l'échelle pour pouvoir dessiner en utilisant les coordonnées logiques
+        ctx.scale(dpr, dpr);
+        
+        // On désactive le lissage pour que les images (comme le vaisseau) soient parfaitement nettes
+        ctx.imageSmoothingEnabled = false;
 
         if (game) {
             game.resize(width, height);
