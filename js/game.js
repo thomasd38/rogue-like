@@ -207,8 +207,22 @@ class Game {
         // Clear canvas and draw background
         this.background.draw(ctx);
 
-        // Draw wave text if playing
+        this.player.draw(ctx);
+        this.projectiles.forEach(p => p.draw(ctx));
+        this.enemyProjectiles.forEach(p => p.draw(ctx));
+        this.enemies.forEach(e => e.draw(ctx));
+        if (this.boss) this.boss.draw(ctx);
+        this.vfx.forEach(v => v.draw(ctx));
+
+        ctx.restore();
+
+        // UI Layer (Always on top, no screen shake)
+        this.drawUI(ctx);
+    }
+
+    drawUI(ctx) {
         if (this.gameState === 'PLAYING' || this.gameState === 'PAUSED' || this.gameState === 'UPGRADE') {
+            // Wave & Time Info
             ctx.fillStyle = '#fff';
             ctx.font = `20px ${window.GAME_FONT}`;
             ctx.textAlign = 'right';
@@ -231,16 +245,12 @@ class Game {
                 ctx.fillStyle = '#ffd54a';
                 ctx.fillText('BOSS RUSH', this.width - 10, 55);
             }
+
+            // Player HP and specific UI
+            if (this.player) {
+                this.player.drawUI(ctx);
+            }
         }
-
-        this.player.draw(ctx);
-        this.projectiles.forEach(p => p.draw(ctx));
-        this.enemyProjectiles.forEach(p => p.draw(ctx));
-        this.enemies.forEach(e => e.draw(ctx));
-        if (this.boss) this.boss.draw(ctx);
-        this.vfx.forEach(v => v.draw(ctx));
-
-        ctx.restore();
     }
 
     spawnEnemy() {

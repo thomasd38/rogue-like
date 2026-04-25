@@ -12,6 +12,9 @@ class Player {
         this.image = new Image();
         this.image.src = 'img/player.png';
 
+        this.healthDotImg = new Image();
+        this.healthDotImg.src = 'img/Health_Dot.png';
+
         // Moteur (Exhaust)
         this.exhaustConfig = {
             model: 5, // Modifiable de 1 à 6 pour changer de moteur
@@ -189,19 +192,37 @@ class Player {
             ctx.fillRect(this.x + this.width / 2 - 2, this.y + this.height / 2 - 2, 4, 4);
         }
 
-        // Draw Player HP
-        ctx.fillStyle = '#0f0';
-        ctx.font = `20px ${window.GAME_FONT}`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText(`HP: ${this.hp}/${this.maxHp}`, 10, 10);
-
         if (this.hasShield) {
             ctx.strokeStyle = '#8be9ff';
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.arc(this.x + this.width / 2, this.y + this.height / 2, this.width * 0.8, 0, Math.PI * 2);
             ctx.stroke();
+        }
+    }
+
+    drawUI(ctx) {
+        // Draw Player HP (Health Dots)
+        if (this.healthDotImg.complete && this.healthDotImg.naturalWidth > 0) {
+            const dotWidth = 22;  // Moins large
+            const dotHeight = 40; // Plus long (haut)
+            const padding = 6;
+            const startX = 15;
+            const startY = this.game.height - dotHeight - 15; // En bas à gauche
+
+            for (let i = 0; i < this.maxHp; i++) {
+                const dx = startX + i * (dotWidth + padding);
+
+                if (i < this.hp) {
+                    ctx.drawImage(this.healthDotImg, dx, startY, dotWidth, dotHeight);
+                } else {
+                    ctx.save();
+                    // Rend le dot gris foncé/noir pour indiquer un PV perdu
+                    ctx.filter = 'grayscale(100%) brightness(30%)';
+                    ctx.drawImage(this.healthDotImg, dx, startY, dotWidth, dotHeight);
+                    ctx.restore();
+                }
+            }
         }
     }
 
