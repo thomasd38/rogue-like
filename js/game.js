@@ -90,6 +90,9 @@ class Game {
     update() {
         if (this.gameState !== 'PAUSED') {
             this.background.update();
+            if (this.player) {
+                this.player.updateExhaust();
+            }
         }
 
         if (this.gameState === 'WAVE_CLEAR_DELAY') {

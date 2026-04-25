@@ -12,6 +12,19 @@ class Player {
         this.image = new Image();
         this.image.src = 'img/player.png';
 
+        // Moteur (Exhaust)
+        this.exhaustConfig = {
+            model: 5, // Modifiable de 1 à 6 pour changer de moteur
+            width: 15, // Largeur de l'effet
+            height: 23, // Hauteur de l'effet
+            offsetY: 62, // Décalage vers le bas par rapport au vaisseau
+            animationSpeed: 4 // Vitesse d'animation (plus c'est petit, plus c'est rapide)
+        };
+        this.exhaustFrames = [];
+        this.exhaustCurrentFrame = 0;
+        this.exhaustTimer = 0;
+        this.loadExhaust(this.exhaustConfig.model);
+
         // Debug
         this.debug = false; // Set to true to see hitboxes
 
@@ -47,6 +60,16 @@ class Player {
         // HP System
         this.maxHp = 3;
         this.hp = this.maxHp;
+    }
+
+    loadExhaust(modelIndex) {
+        this.exhaustConfig.model = modelIndex;
+        this.exhaustFrames = [];
+        for (let i = 0; i <= 9; i++) {
+            const img = new Image();
+            img.src = `img/Exhaust/Exhaust_${modelIndex}_00${i}.png`;
+            this.exhaustFrames.push(img);
+        }
     }
 
     getHitboxes() {
@@ -115,11 +138,30 @@ class Player {
         }
     }
 
+    updateExhaust() {
+        if (this.exhaustFrames.length === 0) return;
+        this.exhaustTimer++;
+        if (this.exhaustTimer >= this.exhaustConfig.animationSpeed) {
+            this.exhaustTimer = 0;
+            this.exhaustCurrentFrame = (this.exhaustCurrentFrame + 1) % this.exhaustFrames.length;
+        }
+    }
+
     draw(ctx) {
         if (this.invulnTimer > 0) {
             // Effet de clignotement pendant l'invulnérabilité
             if (Math.floor(this.invulnTimer / 4) % 2 === 0) {
                 ctx.globalAlpha = 0.5;
+            }
+        }
+
+        // Draw Exhaust (en dessous du vaisseau)
+        if (this.exhaustFrames.length > 0) {
+            const exhaustImg = this.exhaustFrames[this.exhaustCurrentFrame];
+            if (exhaustImg && exhaustImg.complete) {
+                const exX = this.x + (this.width / 2) - (this.exhaustConfig.width / 2);
+                const exY = this.y + this.exhaustConfig.offsetY;
+                ctx.drawImage(exhaustImg, exX, exY, this.exhaustConfig.width, this.exhaustConfig.height);
             }
         }
 
