@@ -5,7 +5,7 @@ class Player {
         this.height = 65;
         this.x = this.game.width / 2 - this.width / 2;
         this.y = this.game.height - this.height - 30;
-        this.speed = 5;
+        this.speed = 2;
         this.color = '#0af'; // Cannon color fallback
 
         // Image loading

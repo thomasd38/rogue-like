@@ -48,8 +48,10 @@ window.addEventListener('load', () => {
         // On met à l'échelle pour pouvoir dessiner en utilisant les coordonnées logiques
         ctx.scale(dpr, dpr);
         
-        // On désactive le lissage pour que les images (comme le vaisseau) soient parfaitement nettes
-        ctx.imageSmoothingEnabled = false;
+        // L'image du joueur est en très haute résolution (1065x860) et on la réduit beaucoup.
+        // Il FAUT donc que le lissage soit activé, sinon le navigateur utilise un algorithme
+        // "Nearest Neighbor" brutal qui détruit les détails de l'image au lieu de les lisser.
+        ctx.imageSmoothingEnabled = true;
 
         if (game) {
             game.resize(width, height);
@@ -172,7 +174,7 @@ window.addEventListener('load', () => {
 
             // Gestion de la visibilité du curseur
             if (game.gameState === 'PLAYING') {
-                canvas.style.cursor = 'none';
+                canvas.style.cursor = 'cell';
             } else {
                 canvas.style.cursor = 'default';
             }
