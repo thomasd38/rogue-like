@@ -253,10 +253,14 @@ class Boss {
         const beamWidth = this.type.laserWidth || 40;
         const laserLeft = this.x + this.width / 2 - beamWidth / 2;
         const laserRight = this.x + this.width / 2 + beamWidth / 2;
-        const playerLeft = this.game.player.x;
-        const playerRight = this.game.player.x + this.game.player.width;
+        const hitboxes = this.game.player.getHitboxes();
+        const hitByLaser = hitboxes.some(pHit => {
+            const playerLeft = pHit.x;
+            const playerRight = pHit.x + pHit.width;
+            return playerRight > laserLeft && playerLeft < laserRight;
+        });
 
-        if (playerRight > laserLeft && playerLeft < laserRight) {
+        if (hitByLaser) {
             this.game.player.takeDamage(2); // Dégâts importants
         }
     }

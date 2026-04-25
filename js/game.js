@@ -292,10 +292,15 @@ class Game {
             });
 
             // Player vs Boss
-            if (this.player.x < this.boss.x + this.boss.width &&
-                this.player.x + this.player.width > this.boss.x &&
-                this.player.y < this.boss.y + this.boss.height &&
-                this.player.y + this.player.height > this.boss.y) {
+            const hitboxes = this.player.getHitboxes();
+            const hitByBoss = hitboxes.some(pHit => 
+                pHit.x < this.boss.x + this.boss.width &&
+                pHit.x + pHit.width > this.boss.x &&
+                pHit.y < this.boss.y + this.boss.height &&
+                pHit.y + pHit.height > this.boss.y
+            );
+
+            if (hitByBoss) {
 
                 this.player.takeDamage(3);
                 if (this.player.hp <= 0) {
@@ -330,14 +335,20 @@ class Game {
         });
 
         // Enemy Projectiles vs Player
+        const hitboxes = this.player.getHitboxes();
         this.enemyProjectiles.forEach(projectile => {
-            let closestX = Math.max(this.player.x, Math.min(projectile.x, this.player.x + this.player.width));
-            let closestY = Math.max(this.player.y, Math.min(projectile.y, this.player.y + this.player.height));
-            let distanceX = projectile.x - closestX;
-            let distanceY = projectile.y - closestY;
-            let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+            if (projectile.markedForDeletion) return;
+            
+            const hitPlayer = hitboxes.some(pHit => {
+                let closestX = Math.max(pHit.x, Math.min(projectile.x, pHit.x + pHit.width));
+                let closestY = Math.max(pHit.y, Math.min(projectile.y, pHit.y + pHit.height));
+                let distanceX = projectile.x - closestX;
+                let distanceY = projectile.y - closestY;
+                let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY);
+                return distanceSquared < (projectile.radius * projectile.radius);
+            });
 
-            if (distanceSquared < (projectile.radius * projectile.radius)) {
+            if (hitPlayer) {
                 projectile.markedForDeletion = true;
                 this.player.takeDamage(projectile.damage);
                 if (this.player.hp <= 0) {
@@ -348,11 +359,17 @@ class Game {
 
         // Player vs Enemies
         this.enemies.forEach(enemy => {
-            // AABB collision
-            if (this.player.x < enemy.x + enemy.width &&
-                this.player.x + this.player.width > enemy.x &&
-                this.player.y < enemy.y + enemy.height &&
-                this.player.y + this.player.height > enemy.y) {
+            if (enemy.markedForDeletion) return;
+            
+            // AABB collision avec les hitboxes composites
+            const hitEnemy = hitboxes.some(pHit => 
+                pHit.x < enemy.x + enemy.width &&
+                pHit.x + pHit.width > enemy.x &&
+                pHit.y < enemy.y + enemy.height &&
+                pHit.y + pHit.height > enemy.y
+            );
+
+            if (hitEnemy) {
 
                 enemy.markedForDeletion = true;
                 this.player.takeDamage(1);

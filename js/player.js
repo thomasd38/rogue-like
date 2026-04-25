@@ -49,6 +49,18 @@ class Player {
         this.hp = this.maxHp;
     }
 
+    getHitboxes() {
+        // Composite hitbox for high precision (Nose, Core, Wings)
+        return [
+            // Nose (top center)
+            { x: this.x + this.width * 0.4, y: this.y + this.height * 0.05, width: this.width * 0.2, height: this.height * 0.35 },
+            // Core / Engine (middle)
+            { x: this.x + this.width * 0.3, y: this.y + this.height * 0.4, width: this.width * 0.4, height: this.height * 0.3 },
+            // Wings (bottom wide)
+            { x: this.x + this.width * 0.05, y: this.y + this.height * 0.7, width: this.width * 0.9, height: this.height * 0.25 }
+        ];
+    }
+
     update(input) {
         // Movement
         if (input.touchActive && input.touchTargetX !== null && input.touchTargetY !== null) {
@@ -123,9 +135,12 @@ class Player {
 
         // Visual Hitbox for testing
         if (this.debug) {
+            const hitboxes = this.getHitboxes();
             ctx.strokeStyle = 'red';
             ctx.lineWidth = 1;
-            ctx.strokeRect(this.x, this.y, this.width, this.height);
+            hitboxes.forEach(hb => {
+                ctx.strokeRect(hb.x, hb.y, hb.width, hb.height);
+            });
             
             // Central point
             ctx.fillStyle = 'red';
