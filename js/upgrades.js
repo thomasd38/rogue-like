@@ -128,7 +128,7 @@ const UPGRADE_TYPES = [
     {
         id: 'charged_shot',
         name: 'Charged Shot',
-        rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
+        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
             { rarity: 'common', value: 20 },
             { rarity: 'uncommon', value: 13 },
@@ -145,7 +145,7 @@ const UPGRADE_TYPES = [
     {
         id: 'cyclic_shield',
         name: 'Cyclic Shield',
-        rewardType: UPGRADE_REWARD_TYPES.UNIQUE,
+        rewardType: UPGRADE_REWARD_TYPES.CLASSIC,
         tiers: [
             { rarity: 'common', value: 50 },
             { rarity: 'uncommon', value: 35 },
