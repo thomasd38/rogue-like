@@ -60,10 +60,11 @@ window.addEventListener('load', () => {
 
     let game = null;
 
+    const { width: logicalWidth, height: logicalHeight } = computeCanvasSize();
     applyCanvasSize();
 
-    // Create the game instance
-    game = new Game(canvas.width, canvas.height, canvas);
+    // Create the game instance with LOGICAL coordinates
+    game = new Game(logicalWidth, logicalHeight, canvas);
 
     const fps = 60;
     const interval = 1000 / fps;
