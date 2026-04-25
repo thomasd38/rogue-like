@@ -268,6 +268,13 @@ class Enemy {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(this.hp, this.x + this.width / 2, this.y + this.height / 2);
+
+        // Debug Hitbox
+        if (this.game.player.debug) {
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
+        }
     }
 
     onDeath() {

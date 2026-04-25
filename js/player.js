@@ -1,12 +1,19 @@
 class Player {
     constructor(game) {
         this.game = game;
-        this.width = 40;
-        this.height = 40;
+        this.width = 65;
+        this.height = 65;
         this.x = this.game.width / 2 - this.width / 2;
-        this.y = this.game.height - this.height - 20;
+        this.y = this.game.height - this.height - 30;
         this.speed = 5;
-        this.color = '#0af'; // Cannon color
+        this.color = '#0af'; // Cannon color fallback
+        
+        // Image loading
+        this.image = new Image();
+        this.image.src = 'img/player.png';
+        
+        // Debug
+        this.debug = true; // Set to true to see hitboxes
 
         // Stats
         this.fireRate = 75; // Frames between shots (lower is faster)
@@ -98,21 +105,32 @@ class Player {
 
     draw(ctx) {
         if (this.invulnTimer > 0) {
-            // Effet de clignotement blanc pendant l'invulnérabilité
+            // Effet de clignotement pendant l'invulnérabilité
             if (Math.floor(this.invulnTimer / 4) % 2 === 0) {
-                ctx.fillStyle = '#fff';
-            } else {
-                ctx.fillStyle = this.color;
+                ctx.globalAlpha = 0.5;
             }
-        } else {
-            ctx.fillStyle = this.color;
         }
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+
+        if (this.image.complete) {
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        } else {
+            // Fallback if image not loaded
+            ctx.fillStyle = this.color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+        
         ctx.globalAlpha = 1;
 
-        // Small barrel to show direction
-        ctx.fillStyle = this.invulnTimer > 0 && Math.floor(this.invulnTimer / 4) % 2 === 0 ? '#fff' : '#fff'; // Toujours blanc ou clignote?
-        ctx.fillRect(this.x + this.width / 2 - 5, this.y - 10, 10, 20);
+        // Visual Hitbox for testing
+        if (this.debug) {
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
+            
+            // Central point
+            ctx.fillStyle = 'red';
+            ctx.fillRect(this.x + this.width / 2 - 2, this.y + this.height / 2 - 2, 4, 4);
+        }
 
         // Draw Player HP
         ctx.fillStyle = '#0f0';

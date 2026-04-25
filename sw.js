@@ -12,6 +12,7 @@ const ASSETS_TO_CACHE = [
   './js/upgrades.js',
   './js/input.js',
   './img/icon-512.png',
+  './img/player.png',
   './manifest.json'
 ];
 

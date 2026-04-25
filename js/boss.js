@@ -194,6 +194,13 @@ class Boss {
                 ctx.fillRect(this.x + this.width / 2 - beamWidth / 2, this.y + this.height, beamWidth, this.game.height);
             }
         }
+
+        // Debug Hitbox
+        if (this.game.player.debug) {
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(this.x, this.y, this.width, this.height);
+        }
     }
 
     takeDamage(amount) {

@@ -155,6 +155,13 @@ window.addEventListener('load', () => {
         if (delta > interval) {
             then = now - (delta % interval);
 
+            // Gestion de la visibilité du curseur
+            if (game.gameState === 'PLAYING') {
+                canvas.style.cursor = 'none';
+            } else {
+                canvas.style.cursor = 'default';
+            }
+
             game.update();
             game.draw(ctx);
         }

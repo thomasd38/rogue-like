@@ -6,7 +6,7 @@ class InputHandler {
         this.touchTargetX = null;
         this.touchTargetY = null;
         this.activePointerId = null;
-        this.touchYOffset = -40; // Décale légèrement vers le haut pour la visibilité
+        this.touchYOffset = -50; // Décale vers le haut pour la visibilité (doigt/souris)
 
         window.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
@@ -91,7 +91,7 @@ class InputHandler {
         this.touchActive = true;
         this.touchTargetX = (clientX - rect.left) * scaleX;
         
-        // Pas d'offset pour la souris pour la précision, offset pour le tactile pour la visibilité
+        // Pas d'offset pour la souris (elle sera invisible), offset pour le tactile pour la visibilité
         const offset = (pointerType === 'mouse') ? 0 : this.touchYOffset;
         this.touchTargetY = (clientY - rect.top) * scaleY + offset;
     }
