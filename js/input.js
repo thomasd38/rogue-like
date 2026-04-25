@@ -85,8 +85,14 @@ class InputHandler {
 
     updateTouchTarget(clientX, clientY, pointerType = 'touch') {
         const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
+        const dpr = window.devicePixelRatio || 1;
+        
+        // On doit utiliser la taille "logique" du jeu, car canvas.width est maintenant en pixels physiques (haute résolution)
+        const logicalWidth = this.canvas.width / dpr;
+        const logicalHeight = this.canvas.height / dpr;
+        
+        const scaleX = logicalWidth / rect.width;
+        const scaleY = logicalHeight / rect.height;
 
         this.touchActive = true;
         this.touchTargetX = (clientX - rect.left) * scaleX;
