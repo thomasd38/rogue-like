@@ -11,7 +11,7 @@ const ASSETS_TO_CACHE = [
   './js/projectile.js',
   './js/upgrades.js',
   './js/input.js',
-  './assets/icon-512.png'
+  './img/icon-512.png'
 ];
 
 // Install event - caching assets
