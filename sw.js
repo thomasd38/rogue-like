@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannon-roguelike-v2';
+const CACHE_NAME = 'void-drifter-v1';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

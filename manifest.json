@@ -1,6 +1,6 @@
 {
-  "name": "Cannon Roguelike",
-  "short_name": "CannonRL",
+  "name": "Void Drifter",
+  "short_name": "VoidDrifter",
   "id": "/rogue-like/",
   "description": "A futuristic space shooter rogue-like game.",
   "start_url": "./index.html",

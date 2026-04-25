@@ -1,4 +1,4 @@
-# 🎮 Project: Cannon Roguelike (working title)
+# 🎮 Project: Void Drifter
 
 ## 🧠 Project Overview
 
