@@ -1,8 +1,10 @@
 {
   "name": "Cannon Roguelike",
   "short_name": "CannonRL",
+  "id": "/rogue-like/",
   "description": "A futuristic space shooter rogue-like game.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
@@ -10,9 +12,22 @@
   "icons": [
     {
       "src": "img/icon-512.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "prefer_related_applications": false
 }
